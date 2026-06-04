@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.JSInterop.Implementation;
+using Newtonsoft.Json.Linq;
 using Orbyss.Blazor.JsonForms.Context.Models;
 using Orbyss.Blazor.JsonForms.Context.Notifications;
 using Orbyss.Blazor.JsonForms.Context.Utils;
@@ -269,5 +270,40 @@ public sealed class JsonFormContextTests
         Assert.That(surnameElement.Hidden, Is.False);
         firstNameErrorText = sut.GetDataContextError(firstNameContext.Id);
         Assert.That(firstNameErrorText, Is.EqualTo(DefaultJsonFormValidationMessages.MaxLength));
+    }
+
+    [Test]
+    public void When_GetFOrmData_AndCOntrolsHidden_Then_RemovesHiddenValues()
+    {
+        // Arrange
+        const string surname = "Hellooo";
+        var formData = new JObject
+        {
+            ["firstName"] = "H",
+            ["surname"] = surname
+        };        
+
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema)
+        {
+            Data = formData
+        };
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var surnameElement = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "surname");
+
+        // Pre-Assert
+        Assert.That(surnameElement.Hidden, Is.True);
+
+        // Act
+        var result = sut.GetFormData();
+
+        // Assert        
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.InstanceOf<JObject>());
+
+        var jobject = (JObject)result;
+        Assert.That(jobject.ContainsKey("surname"), Is.True);
+        Assert.That($"{jobject["surname"]}", Is.Not.EqualTo(surname));
     }
 }

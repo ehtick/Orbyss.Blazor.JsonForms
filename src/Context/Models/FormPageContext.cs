@@ -22,6 +22,13 @@ public sealed class FormPageContext(
         return FindInElements(ElementContexts, id);
     }
 
+    public IEnumerable<IFormElementContext> FindContexts(Func<IFormElementContext, bool> predicate)
+    {
+        var result = new List<IFormElementContext>();
+        FindInElements(ElementContexts, predicate, result);
+        return result;
+    }
+
     public bool Disabled => disabledOverwrite ?? pageInterpretation.Disabled;
 
     public bool Hidden => hiddenOverwrite ?? pageInterpretation.Hidden;
@@ -38,7 +45,7 @@ public sealed class FormPageContext(
         disabledOverwrite = value;
     }
 
-    private IFormElementContext? FindByIdInternal(IFormElementContext elementContext, Guid id)
+    private IFormElementContext? FindInElement(IFormElementContext elementContext, Guid id)
     {
         return elementContext.Interpretation.ElementType switch
         {
@@ -51,6 +58,27 @@ public sealed class FormPageContext(
         };
     }
 
+    private void FindInElement(IFormElementContext elementContext, Func<IFormElementContext, bool> predicate, List<IFormElementContext> result)
+    {
+        switch (elementContext.Interpretation.ElementType)
+        {
+            case UiSchemaElementInterpretationType.VerticalLayout:
+                FindInVerticalLayout((FormVerticalLayoutContext)elementContext, predicate, result); break;
+            case UiSchemaElementInterpretationType.HorizontalLayout:
+                FindInHorizontalLayout((FormHorizontalLayoutContext)elementContext, predicate, result); break;
+            case UiSchemaElementInterpretationType.List:
+                FindInList((FormListContext)elementContext, predicate, result); break;
+            case UiSchemaElementInterpretationType.Control:
+                if (predicate(elementContext))
+                {
+                    result.Add(elementContext);
+                }
+                break;
+
+            default:
+                throw new NotSupportedException($"Element type '{elementContext.Interpretation.ElementType} is not supported'");
+        }
+    }
     private IFormElementContext? FindInList(FormListContext listContext, Guid id)
     {
         if (listContext.Id == id)
@@ -59,12 +87,36 @@ public sealed class FormPageContext(
         return FindInElements(listContext.Items, id);
     }
 
+    private void FindInList(FormListContext listContext, Func<IFormElementContext, bool> predicate, List<IFormElementContext> result)
+    {
+        if (predicate(listContext))
+            result.Add(listContext);
+
+        FindInElements(listContext.Items, predicate, result);
+    }
+
     private IFormElementContext? FindInVerticalLayout(FormVerticalLayoutContext verticalLayoutContext, Guid id)
     {
         if (verticalLayoutContext.Id == id)
             return verticalLayoutContext;
 
         return FindInElements(verticalLayoutContext.Rows, id);
+    }
+
+    private void FindInVerticalLayout(FormVerticalLayoutContext verticalLayoutContext, Func<IFormElementContext, bool> predicate, List<IFormElementContext> result)
+    {
+        if (predicate(verticalLayoutContext))
+            result.Add(verticalLayoutContext);
+
+        FindInElements(verticalLayoutContext.Rows, predicate, result);
+    }
+
+    private void FindInHorizontalLayout(FormHorizontalLayoutContext horizontalLayoutContext, Func<IFormElementContext, bool> predicate, List<IFormElementContext> result)
+    {
+        if (predicate(horizontalLayoutContext))
+            result.Add(horizontalLayoutContext);
+
+        FindInElements(horizontalLayoutContext.Columns, predicate, result);
     }
 
     private IFormElementContext? FindInHorizontalLayout(FormHorizontalLayoutContext horizontalLayoutContext, Guid id)
@@ -79,11 +131,19 @@ public sealed class FormPageContext(
     {
         foreach (var context in elementContexts)
         {
-            var result = FindByIdInternal(context, id);
+            var result = FindInElement(context, id);
             if (result is not null)
                 return result;
         }
 
         return null;
+    }
+
+    private void FindInElements(IEnumerable<IFormElementContext> elementContexts, Func<IFormElementContext, bool> predicate, List<IFormElementContext> result)
+    {
+        foreach (var context in elementContexts)
+        {
+            FindInElement(context, predicate, result);            
+        }
     }
 }

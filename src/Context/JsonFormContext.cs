@@ -107,8 +107,9 @@ public sealed class JsonFormContext(
 
     public JToken GetFormData()
     {
+        RemoveHiddenElements();
         return dataContext.GetFormData();
-    }
+    } 
 
     public void UpdateFormData(Action<JToken> updateDelegate)
     {
@@ -265,5 +266,32 @@ public sealed class JsonFormContext(
         }
 
         throw new InvalidOperationException($"Could not find context by id '{id}'");
+    }
+
+    private FormControlContext[] GetHiddenContexts()
+    {
+        var result = new List<FormControlContext>();
+
+        foreach (var page in pages)
+        {
+            var elements = page.FindContexts(ctx =>
+            {
+                return ctx.Hidden && ctx is FormControlContext;
+            })
+            .Cast<FormControlContext>();
+
+            result.AddRange(elements);
+        }
+
+        return [.. result];
+    }
+
+    private void RemoveHiddenElements()
+    {
+        var hiddenElements = GetHiddenContexts();
+        foreach (var element in hiddenElements)
+        {
+            dataContext.UpdateValue(element, JValue.CreateNull());
+        }
     }
 }
