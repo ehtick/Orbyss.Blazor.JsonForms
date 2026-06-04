@@ -7,7 +7,7 @@ namespace Orbyss.Blazor.JsonForms.Tests.Interpretation;
 
 [TestFixture]
 public sealed class FormUiSchemaInterpreterTests
-{
+{ 
     [Test]
     public void When_Interpret_Then_Returns_UiSchemaInterpretation()
     {

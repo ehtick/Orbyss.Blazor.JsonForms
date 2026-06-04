@@ -84,8 +84,27 @@ public sealed class FormRuleEnforcer : IFormRuleEnforcer
             }
             else
             {
-                contextUnderEvaluation.SetHidden(null);
-                contextUnderEvaluation.SetDisabled(null);
+                switch (rule.Effect)
+                {
+                    case UiSchemaElementRuleEffect.Hide:
+                        contextUnderEvaluation.SetHidden(false);
+                        break;
+
+                    case UiSchemaElementRuleEffect.Show:
+                        contextUnderEvaluation.SetHidden(true);
+                        break;
+
+                    case UiSchemaElementRuleEffect.Disable:
+                        contextUnderEvaluation.SetDisabled(false);
+                        break;
+
+                    case UiSchemaElementRuleEffect.Enable:
+                        contextUnderEvaluation.SetDisabled(true);
+                        break;
+
+                    default:
+                        break;
+                }
             }
         }
     }

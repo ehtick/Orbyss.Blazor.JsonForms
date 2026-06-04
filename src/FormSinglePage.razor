@@ -21,7 +21,7 @@
         }
     </DynamicComponentWithChildContent>
 
-    @if (OnSubmitClicked.HasValue && OnSubmitClicked.Value.HasDelegate)
+    @if (OnSubmitClicked.HasValue && OnSubmitClicked.Value.HasDelegate && !HideSubmitButton)
     {
         <DynamicComponentWithChildContent Type="@(buttonGridInstance.ComponentType)" Parameters="buttonGridInstance.GetParameters()">
             <DynamicComponentWithChildContent Type="@(buttonGridRowInstance.ComponentType)" Parameters="buttonGridRowInstance.GetParameters()">
@@ -38,6 +38,9 @@
 @code {
     [Parameter, EditorRequired]
     public FormPageContext? Page { get; set; }
+
+    [Parameter, EditorRequired]
+    public bool HideSubmitButton { get; set; }
 
     [CascadingParameter]
     public IFormComponentInstanceProvider ComponentInstanceProvider { get; set; } = default!;
