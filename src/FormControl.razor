@@ -19,6 +19,7 @@
     private void OnLanguageChanged()
     {
         controlInstance.Label = FormContext!.GetLabel(ControlContext!.Id);
+        controlInstance.HelperIconText = FormContext!.GetHelperIconText(ControlContext!.Id);
 
         if (!string.IsNullOrWhiteSpace(controlInstance.ErrorHelperText))
         {
@@ -77,8 +78,9 @@
             FormContext!.GetValue(ControlContext!.Id)
         );
         controlInstance.Label = FormContext!.GetLabel(ControlContext!.Id);
+        controlInstance.HelperIconText = FormContext!.GetHelperIconText(ControlContext!.Id);
         controlInstance.ReadOnly = FormContext.ReadOnly || ControlContext.ReadOnly;
-        controlInstance.Disabled = FormContext.Disabled || ControlContext.Disabled;        
+        controlInstance.Disabled = FormContext.Disabled || ControlContext.Disabled;
     }
 
     private IDictionary<string, object?> GetControlParameters()

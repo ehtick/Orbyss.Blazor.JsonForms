@@ -2,6 +2,7 @@
 using Orbyss.Blazor.JsonForms.Context.Interfaces;
 using Orbyss.Blazor.JsonForms.Context.Models;
 using Orbyss.Blazor.JsonForms.Context.Notifications;
+using Orbyss.Blazor.JsonForms.Constants;
 using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
 using Orbyss.Blazor.JsonForms.Utils;
 using Orbyss.Components.Json.Models;
@@ -161,6 +162,21 @@ public sealed class JsonFormContext(
         throw new ArgumentException($"Could not get the translated label for context '{match.Id}'");
     }
 
+    public string? GetHelperIconText(Guid controlContextId)
+    {
+        var match = FindContextById(controlContextId);
+        if (match is not FormControlContext control)
+            return null;
+
+        var optionValue = control.Interpretation.GetOption(FormUiSchemaOptionKeys.HelperIconLabel);
+        if (optionValue is null)
+            return null;
+
+        var literalValue = $"{optionValue}";
+        var labelInterpretation = new Interpretation.UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
+        return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
+    }
+
     public IEnumerable<TranslatedEnumItem> GetTranslatedEnumItems(Guid controlContextId)
     {
         var match = FindContextById(controlContextId);
@@ -268,30 +284,27 @@ public sealed class JsonFormContext(
         throw new InvalidOperationException($"Could not find context by id '{id}'");
     }
 
-    private FormControlContext[] GetHiddenContexts()
-    {
-        var result = new List<FormControlContext>();
+    private void RemoveHiddenElements()
+    {        
+        var displayedContexts = pages
+            .SelectMany(x => x.FindContexts(ctx => !ctx.Hidden && ctx is FormControlContext))
+            .Cast<FormControlContext>();
 
-        foreach (var page in pages)
-        {
-            var elements = page.FindContexts(ctx =>
+        var hiddenContexts = pages
+            .SelectMany(x =>
             {
-                return ctx.Hidden && ctx is FormControlContext;
+                return x.FindContexts(
+                    ctx => ctx.Hidden && ctx is FormControlContext controlContext && IsTrulyHidden(controlContext, displayedContexts)
+                );
             })
             .Cast<FormControlContext>();
 
-            result.AddRange(elements);
-        }
-
-        return [.. result];
+        foreach (var ctx in hiddenContexts)
+            dataContext.UpdateValue(ctx, null);
     }
 
-    private void RemoveHiddenElements()
+    private static bool IsTrulyHidden(FormControlContext ctx, IEnumerable<FormControlContext> displayedContexts)
     {
-        var hiddenElements = GetHiddenContexts();
-        foreach (var element in hiddenElements)
-        {
-            dataContext.UpdateValue(element, JValue.CreateNull());
-        }
+        return !displayedContexts.Any(displayedCtx => displayedCtx.Interpretation.AbsoluteSchemaJsonPath != ctx.Interpretation.AbsoluteSchemaJsonPath);
     }
 }

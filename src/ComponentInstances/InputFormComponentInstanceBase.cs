@@ -16,6 +16,8 @@ public abstract class InputFormComponentInstanceBase : FormComponentInstanceBase
 
     public string? HelperText { get; set; }
 
+    public string? HelperIconText { get; internal set; }
+
     public object? Value => ConvertValue(value);
 
     internal void SetInputValue(JToken? value)
@@ -35,6 +37,7 @@ public abstract class InputFormComponentInstanceBase : FormComponentInstanceBase
         var result = GetFormInputParameters();
         AddIfNotContains(result, nameof(HelperText), HelperText);
 
+        result[nameof(HelperIconText)] = HelperIconText;
         result[nameof(Label)] = Label;
         result[nameof(Disabled)] = Disabled;
         result[nameof(ReadOnly)] = ReadOnly;
