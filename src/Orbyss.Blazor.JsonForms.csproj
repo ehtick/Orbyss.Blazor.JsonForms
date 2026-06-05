@@ -28,10 +28,16 @@
 		<PackageIcon>icon.png</PackageIcon>
 
 		<PackageReleaseNotes>
-			*Release: 8 August, 2025*
-			- Found minor bug in TranslationContext; when language was null, the property name for labels was returned right away. 
-			Now, we will first check if there are any translations, and only when there is not other option left will we return the property name
-		</PackageReleaseNotes>
+			*Release: 6 June, 2026*
+			- Added "helperIconLabel" as a known custom option on Control elements. The value is resolved through the translation context
+			(i18n key first, literal string fallback) and exposed as HelperIconText on InputFormComponentInstanceBase, keeping it
+			in sync with language changes automatically.
+			- Added "cssClass" as a known custom option on Control elements. The schema-defined class is merged with any
+			programmatically assigned class (programmatic first, schema last) and applied once on initialisation.
+			- Bug fix: hidden control contexts no longer null out their bound data path when another displayed control context
+			points to the same path. A context is now only truly hidden if no other visible context shares its data path.
+
+</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
