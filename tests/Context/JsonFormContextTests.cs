@@ -11,8 +11,11 @@ namespace Orbyss.Blazor.JsonForms.Tests.Context;
 public sealed class JsonFormContextTests
 {
     private const string jsonSchema = "{\"properties\":{\"firstName\":{\"type\":\"string\", \"maxLength\": 6},\"surname\":{\"type\":\"string\"}}}";
-    private const string translationSchema = "{\"resources\":{\"en\":{\"translation\":{\"firstName\":{\"label\":\"First Name\"}}},\"nl\":{\"translation\":{\"firstName\":{\"label\":\"Voornaam\"}}}}}";
+    private const string translationSchema = "{\"resources\":{\"en\":{\"translation\":{\"firstName\":{\"label\":\"First Name\"},\"helperKey\":{\"label\":\"This is helpful info\"}}},\"nl\":{\"translation\":{\"firstName\":{\"label\":\"Voornaam\"}}}}}";
     private const string uiSchema = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"readonly\":true,\"disabled\":true}},{\"type\":\"Control\",\"scope\":\"#/properties/surname\",\"options\":{\"hidden\":true},\"rule\":{\"effect\":\"Show\",\"condition\":{\"scope\":\"#/properties/firstName\",\"schema\":{\"minLength\":2}}}}],\"options\":{\"customOption\":\"custom-option-value\"}}";
+    private const string uiSchemaWithCssClass = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"cssClass\":\"my-class\"}}]}";
+    private const string uiSchemaWithHelperIconLabel = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"helperIconLabel\":\"helperKey\"}},{\"type\":\"Control\",\"scope\":\"#/properties/surname\",\"options\":{\"helperIconLabel\":\"Literal helper text\"}}]}";
+    private const string uiSchemaWithDuplicateScope = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\"},{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"hidden\":true}}]}";
 
     [Test]
     public void When_Instantiate_Then_SetsUpContext()
@@ -305,5 +308,119 @@ public sealed class JsonFormContextTests
         var jobject = (JObject)result;
         Assert.That(jobject.ContainsKey("surname"), Is.True);
         Assert.That($"{jobject["surname"]}", Is.Not.EqualTo(surname));
+    }
+
+    [Test]
+    public void When_GetFormData_And_HiddenContextSharesPathWithDisplayedContext_Then_ValueIsPreserved()
+    {
+        // Arrange — two controls bound to the same path, one hidden, one displayed
+        var formData = new JObject
+        {
+            ["firstName"] = "Johannes"
+        };
+
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchemaWithDuplicateScope, translationSchema)
+        {
+            Data = formData
+        };
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+
+        // Act
+        var result = sut.GetFormData();
+
+        // Assert — the displayed context keeps the value alive; hidden sibling must not null it out
+        var jobject = (JObject)result;
+        Assert.That($"{jobject["firstName"]}", Is.EqualTo("Johannes"));
+    }
+
+    [Test]
+    public void When_GetCssClass_And_OptionIsSet_Then_ReturnsOptionValue()
+    {
+        // Arrange
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchemaWithCssClass, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        // Act
+        var result = sut.GetCssClass(firstNameContext.Id);
+
+        // Assert
+        Assert.That(result, Is.EqualTo("my-class"));
+    }
+
+    [Test]
+    public void When_GetCssClass_And_OptionIsNotSet_Then_ReturnsNull()
+    {
+        // Arrange
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        // Act
+        var result = sut.GetCssClass(firstNameContext.Id);
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public void When_GetHelperIconText_And_OptionValueIsI18nKey_Then_ReturnsTranslatedLabel()
+    {
+        // Arrange — "helperKey" resolves to "This is helpful info" via the en translation
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchemaWithHelperIconLabel, translationSchema)
+        {
+            Language = "en"
+        };
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        // Act
+        var result = sut.GetHelperIconText(firstNameContext.Id);
+
+        // Assert
+        Assert.That(result, Is.EqualTo("This is helpful info"));
+    }
+
+    [Test]
+    public void When_GetHelperIconText_And_OptionValueIsLiteralString_Then_ReturnsLiteralValue()
+    {
+        // Arrange — "Literal helper text" has no matching i18n key, falls back to the literal value
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchemaWithHelperIconLabel, translationSchema)
+        {
+            Language = "en"
+        };
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var surnameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "surname");
+
+        // Act
+        var result = sut.GetHelperIconText(surnameContext.Id);
+
+        // Assert
+        Assert.That(result, Is.EqualTo("Literal helper text"));
+    }
+
+    [Test]
+    public void When_GetHelperIconText_And_OptionIsNotSet_Then_ReturnsNull()
+    {
+        // Arrange
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        // Act
+        var result = sut.GetHelperIconText(firstNameContext.Id);
+
+        // Assert
+        Assert.That(result, Is.Null);
     }
 }

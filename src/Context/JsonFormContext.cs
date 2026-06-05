@@ -177,6 +177,16 @@ public sealed class JsonFormContext(
         return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
     }
 
+    public string? GetCssClass(Guid controlContextId)
+    {
+        var match = FindContextById(controlContextId);
+        if (match is not FormControlContext control)
+            return null;
+
+        var optionValue = control.Interpretation.GetOption(FormUiSchemaOptionKeys.CssClass);
+        return optionValue is null ? null : $"{optionValue}";
+    }
+
     public IEnumerable<TranslatedEnumItem> GetTranslatedEnumItems(Guid controlContextId)
     {
         var match = FindContextById(controlContextId);
