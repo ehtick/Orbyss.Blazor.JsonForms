@@ -305,6 +305,6 @@ public sealed class JsonFormContext(
 
     private static bool IsTrulyHidden(FormControlContext ctx, IEnumerable<FormControlContext> displayedContexts)
     {
-        return !displayedContexts.Any(displayedCtx => displayedCtx.Interpretation.AbsoluteSchemaJsonPath != ctx.Interpretation.AbsoluteSchemaJsonPath);
+        return !displayedContexts.Any(displayedCtx => displayedCtx.Interpretation.AbsoluteSchemaJsonPath == ctx.Interpretation.AbsoluteSchemaJsonPath);
     }
 }
