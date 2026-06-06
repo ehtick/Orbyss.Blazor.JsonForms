@@ -1,0 +1,152 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+
+		<!-- NuGet Metadata -->
+		<Title>Orbyss Blazor JsonForms</Title>
+		<Copyright>© 2025 Orbyss.io</Copyright>		
+		<PackageId>Orbyss.Blazor.JsonForms</PackageId>
+		<Authors>Orbyss.io</Authors>
+		<Company>Orbyss</Company>
+		<Description>A fully .NET-native implementation of the JsonForms.io standard for schema-driven forms in Blazor.</Description>		
+		<PackageTags>
+			blazor;jsonforms;forms;jsonschema;schema;formgenerator;dynamicforms;webforms;formengine;ui;ui-framework;SchemaDriven
+		</PackageTags>
+
+		<RepositoryUrl>https://github.com/orbyss-io/Orbyss.Blazor.JsonForms</RepositoryUrl>
+		<!-- Optional -->
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<!-- or your actual license -->
+		<PackageProjectUrl>https://github.com/orbyss-io/Orbyss.Blazor.JsonForms</PackageProjectUrl>
+		<!-- Optional -->
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryType>git</RepositoryType>
+		<PackageIcon>icon.png</PackageIcon>
+
+		<PackageReleaseNotes>
+			*Release: 6 June, 2026*
+			- Added OnControlValueChanged and OnControlInputChanged events to JsonFormContextInitOptions. Handlers receive the
+			FormControlContext and IJsonFormContext, support multiple subscribers via +=, and fire after every committed value
+			change or raw input event respectively.
+			- Added FindControl and FindControls to IJsonFormContext for predicate-based context lookup across the full element tree.
+			- Added NotifyControlValueChanged and NotifyControlInputChanged to IJsonFormContext, called automatically by the form
+			engine after each value or input event.
+			- Added OnInputChanged parameter key to ComponentInstanceParameterKeys. Components that declare an OnInputChanged
+			parameter receive raw input callbacks; those that do not have it stripped automatically.
+			- Added ActionButton as a first-class UI schema element type. Recognised by the interpreter, rule engine, and context
+			factory. Supports all standard rule effects (Show, Hide, Enable, Disable) using the same rule engine as controls.
+			- Added FormActionHandler delegate and RegisterAction on JsonFormContextInitOptions for mapping action keys to async handlers.
+			- Added InvokeAction to IJsonFormContext, called by the engine when an ActionButton is clicked.
+			- Added ActionButtonFormComponentInstanceBase with Label, Disabled, and OnClick parameters.
+			- Added FormActionButton.razor which wires the click callback, resolves the translated label, and respects disabled/hidden state.
+			- Added FormUiSchemaOptionKeys.ActionKey constant.
+				- Added FormCssVariables static class with CSS custom property name constants (--orbyss-form-primary,
+				--orbyss-form-error, --orbyss-form-border-radius, etc.) for host-app theming without component changes.
+				- Added FormCssClasses static class with CSS class name constants for all control types
+				(orbyss-form-text-input, orbyss-form-action-button, etc.).
+				- Added CssClassHelper.Merge utility: appends cssClass option to the component default by default; if the
+				value starts with ! the remainder replaces the default entirely (e.g. "!my-class" discards the engine default).
+				- Added wwwroot/orbyss-forms.css — a base stylesheet defining all CSS variables with sensible defaults.
+				Include via: _content/Orbyss.Blazor.JsonForms/orbyss-forms.css. Override any variable in your own CSS.
+				- Syncfusion component instances (text, number, dropdown, checkbox, slider, enum blocks, action button) now
+				each ship with a typed default Class value from FormCssClasses, giving host stylesheets stable hook points.
+				- GetCssClass on IJsonFormContext now also resolves the cssClass option for FormActionButtonContext, not just
+				controls.
+				- Removed GetGrid, GetGridRow, and GetGridColumn from IFormComponentInstanceProvider. Layout containers
+				are now plain divs emitted directly by the engine razor files — no provider involvement required.
+				- FormVerticalLayout, FormHorizontalLayout, FormSinglePage rewritten to emit semantic div elements with
+				FormCssClasses constants instead of routing through DynamicComponentWithChildContent for layout.
+				- Added FormCssClasses.ButtonRow, ButtonColumn, ButtonRowSpaceBetween for the submit / navigation button
+				area and the stepper prev+next spread layout.
+				- Added three granular layout spacing variables to FormCssVariables and orbyss-forms.css:
+				--orbyss-form-row-gap (vertical gap between rows), --orbyss-form-column-gap (horizontal gap between
+				columns), --orbyss-form-button-gap (button row gap and top margin). All default to --orbyss-form-spacing
+				so a single override still controls everything.
+				- Core engine project added to the Syncfusion solution file so both projects are visible and navigable
+				in a single Visual Studio window.
+				- Added UiSchemaElementType.ArrayLayout and UiSchemaElementInterpretationType.ArrayLayout.
+				- Added FormUiSchemaOptionKeys.AddLabel — translation key for the array "add item" button.
+				- Added FormUiSchemaElement.Items — optional per-item UI schema element for ArrayLayout.
+				  When absent, a HorizontalLayout is auto-generated from the JSON Schema items.properties.
+				- Added UiSchemaArrayLayoutInterpretation with resolved schema paths, addLabel key, and
+				  the per-item IUiSchemaElementInterpretation (explicit or auto-generated).
+				- Added FormArrayItemContext — a simple DTO with Id, Index, and ElementContext that
+				  represents one item in an inline array repeater.
+				- Added FormArrayContext — extends FormControlContextBase; manages an ordered list of
+				  FormArrayItemContext entries and validates minItems/maxItems on submit.
+				- Added InstantiateArray, AddArrayItem, RemoveArrayItem, MoveArrayItem to
+				  IJsonFormDataContext and JsonFormDataContext. Remove and Move both rebuild all item
+				  contexts from scratch so data paths stay in sync with the new JArray indices.
+				- Added the same four methods plus GetArrayAddLabel to IJsonFormContext / JsonFormContext.
+				  GetArrayAddLabel resolves the addLabel option through the translation schema
+				  (same pattern as GetHelperIconText).
+				- FormElementContextFactory handles UiSchemaElementInterpretationType.ArrayLayout,
+				  producing a FormArrayContext with the correct absolute data path.
+				- FormElementSelector.razor now routes ArrayLayout to the new FormArrayLayout.razor.
+				- FormPageContext.FindInElement and FindInElement(predicate) handle ArrayLayout,
+				  recursing into each item's ElementContext.
+				- FormRuleEnforcer handles ArrayLayout in EnforceRule, SetDisabledForElement, and
+				  SetHiddenForElement.
+				- Added ArrayLayoutFormComponentInstanceBase with ArrayContext and AddLabel parameters.
+				- Added GetArrayLayout to IFormComponentInstanceProvider.
+				- Added array-related CSS classes to FormCssClasses (Array, ArrayItem, ArrayItemControls,
+				  ArrayItemActions, ArrayAddRow, ArrayItemDragOver) with matching rules in orbyss-forms.css.
+				- Added three named delegate types on JsonFormContextOptions for array lifecycle hooks:
+				  ArrayItemAddedHandler(arrayContext, addedIndex, form),
+				  ArrayItemRemovedHandler(arrayContext, removedIndex, form), and
+				  ArrayItemMovedHandler(arrayContext, fromIndex, toIndex, form).
+				  Named parameters make handler signatures self-documenting, especially for Move where
+				  fromIndex/toIndex would otherwise be ambiguous plain integers.
+				- Added OnArrayItemAdded, OnArrayItemRemoved, OnArrayItemMoved multi-subscriber events
+				  to JsonFormContextOptions. Handlers fire after the mutation and rule re-evaluation,
+				  using the same += pattern as OnControlValueChanged.
+				- Added NotifyArrayItemAdded, NotifyArrayItemRemoved, NotifyArrayItemMoved to
+				  IJsonFormContext for callers that need to fire the events manually.
+				- Renamed JsonFormContextInitOptions to JsonFormContextOptions (removed "Init" from the
+				  name). The class, constructor, and all references in the engine have been updated.
+				- Fixed a pre-existing bug in FormRuleEnforcer.SetHiddenForElement where the method
+				  incorrectly called SetDisabled instead of SetHidden at its entry point, causing hidden
+				  rules to silently disable elements rather than hide them.
+		</PackageReleaseNotes>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+		<SupportedPlatform Include="windows" />
+		<SupportedPlatform Include="ios" />
+		<SupportedPlatform Include="android" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="" />
+		<None Include="icon.png" Pack="true" PackagePath="" />
+		<None Include="LICENSE" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(UseNuGetForCore)' != 'true'">
+		<ProjectReference Include="..\core\Orbyss.Blazor.JsonForms.Core.csproj" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(UseNuGetForCore)' == 'true'">
+		<PackageReference Include="Orbyss.Blazor.JsonForms.Core" Version="*" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="JLio.Client" Version="1.6.1" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.18" PrivateAssets="all">
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.1" PrivateAssets="all">
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</PackageReference>	
+	</ItemGroup>
+</Project>

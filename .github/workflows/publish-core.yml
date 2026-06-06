@@ -1,0 +1,17 @@
+name: Publish Core
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: NuGet package version
+        required: true
+        type: string
+
+jobs:
+  publish:
+    uses: ./.github/workflows/publish-package.yml
+    with:
+      project-path: core/Orbyss.Blazor.JsonForms.Core.csproj
+      version: ${{ inputs.version }}
+    secrets: inherit

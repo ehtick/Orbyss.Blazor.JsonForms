@@ -1,0 +1,155 @@
+@using System.Reflection
+
+@inherits FormComponentBase
+
+@if (ControlContext is not null && FormContext is not null && controlInstance is not null)
+{
+    <DynamicComponent Type="controlInstance.ComponentType" Parameters="controlInstance.Parameters" />
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public FormControlContext? ControlContext { get; set; }
+
+    [CascadingParameter]
+    public IFormComponentFactory ComponentFactory { get; set; } = default!;
+
+    private IComponentInstance controlInstance = default!;
+
+    protected override void OnInitialized()
+    {
+        SubscribeOnLanguageChanged(OnLanguageChanged);
+        SubscribeOnDataValidated(RefreshErrors);
+        SubscribeOnDataChanged(RefreshData);
+        SubscribeOnReadOnlyChanged(RefreshReadOnly);
+        SubscribeOnDisabledChanged(RefreshDisabled);
+
+        controlInstance = ComponentFactory.CreateControl(FormContext!, ControlContext!);
+        AppendEventCallbacks(controlInstance);
+    }
+
+    // ── EventCallback wiring ─────────────────────────────────────────────────
+    // EventCallbacks must be created inside a Razor component because they capture 'this'.
+    // We use reflection to create the correctly-typed generic EventCallback<TValue> at runtime.
+
+    private void AppendEventCallbacks(IComponentInstance instance)
+    {
+        var valueType = ControlTypeLookup.GetForControlType(ControlContext!.Interpretation.ControlType);
+
+        GetType()
+            .GetMethod(nameof(AppendTypedCallbacks), BindingFlags.NonPublic | BindingFlags.Instance)!
+            .MakeGenericMethod(valueType)
+            .Invoke(this, [instance]);
+    }
+
+    private void AppendTypedCallbacks<TValue>(IComponentInstance instance)
+    {
+        instance.Parameters[FormComponentParameterKeys.OnValueChanged] =
+            new EventCallback<TValue>(this, new Action<TValue>(OnValueChanged<TValue>));
+
+        instance.Parameters[FormComponentParameterKeys.OnInputChanged] =
+            new EventCallback<TValue>(this, new Action<TValue>(OnInputChanged<TValue>));
+    }
+
+    // ── Refresh callbacks ────────────────────────────────────────────────────
+
+    private void OnLanguageChanged()
+    {
+        controlInstance
+            .SetLabel(FormContext!.GetLabel(ControlContext!.Id))
+            .SetHelperIconText(FormContext!.GetHelperIconText(ControlContext!.Id));
+
+        var schemaHelperText = FormContext!.GetHelperText(ControlContext!.Id);
+        if (schemaHelperText is not null)
+            controlInstance.SetHelperText(schemaHelperText);
+
+        var ct = ControlContext!.Interpretation.ControlType;
+        if (ct is ControlType.Enum or ControlType.EnumList)
+            controlInstance.SetItems(FormContext.GetTranslatedEnumItems(ControlContext.Id));
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshErrors()
+    {
+        controlInstance.SetErrorHelperText(FormContext.GetDataContextError(ControlContext!.Id));
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshData()
+    {
+        var ct = ControlContext!.Interpretation.ControlType;
+        controlInstance
+            .SetValue(ControlTypeLookup.ConvertFromJToken(FormContext.GetValue(ControlContext.Id), ct))
+            .SetReadOnly(FormContext.ReadOnly || ControlContext.ReadOnly)
+            .SetDisabled(FormContext.Disabled || ControlContext.Disabled);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshReadOnly()
+    {
+        if (ControlContext?.ReadOnly != true)
+            controlInstance.SetReadOnly(FormContext.ReadOnly);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshDisabled()
+    {
+        if (ControlContext?.Disabled != true)
+            controlInstance.SetDisabled(FormContext.Disabled);
+        InvokeAsync(StateHasChanged);
+    }
+
+    // ── Value change / input handlers ────────────────────────────────────────
+
+    private void OnValueChanged<TValue>(TValue value)
+    {
+        JToken jtoken;
+        if (value is null)
+        {
+            jtoken = JValue.CreateNull();
+        }
+        else if (value is DateTimeUtcTicks dtTicks)
+        {
+            jtoken = JToken.FromObject(dtTicks.UtcTicks);
+        }
+        else if (value is DateUtcTicks dTicks)
+        {
+            jtoken = JToken.FromObject(dTicks.UtcTicks);
+        }
+        else if (value is DateOnly dateOnly)
+        {
+            jtoken = JToken.FromObject(dateOnly.ToString("yyyy-MM-dd"));
+        }
+        else if (value is DateTime dateTime)
+        {
+            jtoken = new JValue(dateTime);
+        }
+        else
+        {
+            jtoken = JToken.FromObject(value);
+        }
+
+        FormContext?.UpdateValue(ControlContext!.Id, jtoken);
+
+        controlInstance
+            .SetValue(ControlTypeLookup.ConvertFromJToken(jtoken, ControlContext!.Interpretation.ControlType))
+            .SetErrorHelperText(null);
+
+        InvokeAsync(async () =>
+        {
+            if (FormContext is not null)
+                await FormContext.NotifyControlValueChanged(ControlContext!.Id);
+            StateHasChanged();
+        });
+    }
+
+    private void OnInputChanged<TValue>(TValue value)
+    {
+        InvokeAsync(async () =>
+        {
+            if (FormContext is not null)
+                await FormContext.NotifyControlInputChanged(ControlContext!.Id);
+        });
+    }
+}

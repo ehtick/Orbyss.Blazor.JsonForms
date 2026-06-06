@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Context.Models;
 using Orbyss.Blazor.JsonForms.Context.Utils;
@@ -114,7 +114,7 @@ public sealed class JsonFormDataContextTests
             "$.properties.firstName",
             "firstName",
             "$",
-            new UiSchema.FormUiSchemaElement(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/firstName", null, null),
+            new Dictionary<string, JToken?>(),
             null
         );
         return new FormControlContext("$.firstName", "$", formControlInterpretation);

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Context.Utils;
 using Orbyss.Blazor.JsonForms.Interpretation;
 using Orbyss.Components.Json.Models;
@@ -89,7 +90,7 @@ public sealed class JsonFormTranslationContextTests
             "$.properties.address.properties.street",
             "street",
             "$.properties.address",
-            new(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/address/properties/street", null, null),
+            new Dictionary<string, JToken?>(),
             null
         );
         var sut = JsonFormTranslationContextBuilder.BuildAndInstantiate(
@@ -118,7 +119,7 @@ public sealed class JsonFormTranslationContextTests
             "$.properties.address.properties.street",
             "street",
             "$.properties.address",
-            new(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/address/properties/street", null, null),
+            new Dictionary<string, JToken?>(),
             null
         );
         var sut = JsonFormTranslationContextBuilder.BuildAndInstantiate(
@@ -147,7 +148,7 @@ public sealed class JsonFormTranslationContextTests
             "$.properties.address.properties.street",
             "street",
             "$.properties.address",
-            new(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/address/properties/street", null, null),
+            new Dictionary<string, JToken?>(),
             null
         );
         var sut = JsonFormTranslationContextBuilder.BuildAndInstantiate(
@@ -176,7 +177,7 @@ public sealed class JsonFormTranslationContextTests
             "$.properties.unknownProp.properties.unknownNestedProp",
             "unknownNestedProp",
             "$.properties.unknownProp",
-            new(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/unknownProp/properties/unknownNestedProp", null, null),
+            new Dictionary<string, JToken?>(),
             null
         );
         var sut = JsonFormTranslationContextBuilder.BuildAndInstantiate(
@@ -205,7 +206,7 @@ public sealed class JsonFormTranslationContextTests
             "$.properties.addressType",
             "addressType",
             "$",
-            new(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/addressType", null, null),
+            new Dictionary<string, JToken?>(),
             null
         );
         var sut = JsonFormTranslationContextBuilder.BuildAndInstantiate(
@@ -243,7 +244,7 @@ public sealed class JsonFormTranslationContextTests
             "$.properties.nonTranslatedEnum",
             "nonTranslatedEnum",
             "$",
-            new(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/nonTranslatedEnum", null, null),
+            new Dictionary<string, JToken?>(),
             null
         );
         var sut = JsonFormTranslationContextBuilder.BuildAndInstantiate(
@@ -281,7 +282,7 @@ public sealed class JsonFormTranslationContextTests
             "$.properties.addressType",
             "addressType",
             "$",
-            new(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/addressType", null, null),
+            new Dictionary<string, JToken?>(),
             null
         );
         var sut = JsonFormTranslationContextBuilder.BuildAndInstantiate(
@@ -316,7 +317,7 @@ public sealed class JsonFormTranslationContextTests
             "$.properties.nonTranslatedEnum",
             "nonTranslatedEnum",
             "$",
-            new(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/nonTranslatedEnum", null, null),
+            new Dictionary<string, JToken?>(),
             null
         );
         var sut = JsonFormTranslationContextBuilder.BuildAndInstantiate(

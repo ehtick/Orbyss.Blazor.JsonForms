@@ -1,0 +1,44 @@
+@inherits FormComponentBase
+
+@if (ActionButtonContext is not null && FormContext is not null && !ActionButtonContext.Hidden)
+{
+    <DynamicComponent Type="buttonInstance.ComponentType" Parameters="buttonInstance.Parameters" />
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public FormActionButtonContext? ActionButtonContext { get; set; }
+
+    [CascadingParameter]
+    public IFormComponentFactory ComponentFactory { get; set; } = default!;
+
+    private IComponentInstance buttonInstance = default!;
+
+    protected override void OnInitialized()
+    {
+        SubscribeOnLanguageChanged(OnLanguageChanged);
+        SubscribeOnDataChanged(RefreshData);
+
+        buttonInstance = ComponentFactory.CreateActionButton(FormContext!, ActionButtonContext!);
+        buttonInstance.SetParameter(FormComponentParameterKeys.OnClick,
+            EventCallback.Factory.Create(this, OnClick));
+    }
+
+    private void OnLanguageChanged()
+    {
+        buttonInstance.SetLabel(FormContext!.GetLabel(ActionButtonContext!.Id));
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshData()
+    {
+        buttonInstance.SetDisabled(ActionButtonContext!.Disabled);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnClick()
+    {
+        if (FormContext is not null)
+            await FormContext.InvokeAction(ActionButtonContext!.Interpretation.ActionKey);
+    }
+}

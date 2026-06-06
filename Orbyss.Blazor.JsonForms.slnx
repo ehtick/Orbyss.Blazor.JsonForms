@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="forms/Orbyss.Blazor.JsonForms.csproj" />
+    <Project Path="core/Orbyss.Blazor.JsonForms.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Orbyss.Blazor.JsonForms.Tests.csproj" />
+  </Folder>
+</Solution>

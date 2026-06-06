@@ -1,0 +1,103 @@
+@inherits FormComponentBase
+
+@if (List is not null && listInstance is not null)
+{
+    <DynamicComponentWithChildContent Type="listInstance.ComponentType" Parameters="listInstance.Parameters">
+        @foreach (var item in List.Items)
+        {
+            var itemInstance = ComponentFactory.CreateListItem(item);
+            itemInstance.SetParameter(FormComponentParameterKeys.OnRemoveItemClicked, GetRemoveClickedEvent(item));
+            <DynamicComponentWithChildContent Type="itemInstance.ComponentType" Parameters="itemInstance.Parameters">
+                <FormElementSelector Context="@item" />
+            </DynamicComponentWithChildContent>
+        }
+    </DynamicComponentWithChildContent>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public FormListContext List { get; set; } = default!;
+
+    [CascadingParameter]
+    public IFormComponentFactory ComponentFactory { get; set; } = default!;
+
+    private IComponentInstance listInstance = default!;
+
+    protected override void OnInitialized()
+    {
+        SubscribeOnLanguageChanged(OnLanguageChanged);
+        SubscribeOnDataValidated(RefreshErrors);
+        SubscribeOnDataChanged(RefreshData);
+        SubscribeOnReadOnlyChanged(RefreshReadOnly);
+        SubscribeOnDisabledChanged(RefreshDisabled);
+
+        FormContext.InstantiateList(List.Id);
+        listInstance = ComponentFactory.CreateList(FormContext, List);
+        listInstance.SetParameter(FormComponentParameterKeys.OnAddItemClicked, GetAddClickedEvent());
+
+        base.OnInitialized();
+    }
+
+    private EventCallback GetAddClickedEvent()
+    {
+        return new EventCallback(this, new Func<Task>(async () =>
+        {
+            var readOnly = listInstance.Parameters.TryGetValue(FormComponentParameterKeys.ReadOnly, out var ro) && ro is true;
+            var disabled = listInstance.Parameters.TryGetValue(FormComponentParameterKeys.Disabled, out var d)  && d is true;
+            if (!readOnly && !disabled)
+            {
+                FormContext.AddListItem(List.Id);
+                await InvokeAsync(StateHasChanged);
+            }
+        }));
+    }
+
+    private EventCallback GetRemoveClickedEvent(IFormElementContext item)
+    {
+        return new EventCallback(this, new Func<Task>(async () =>
+        {
+            if (!item.ReadOnly && !item.Disabled)
+            {
+                FormContext.RemoveListItem(List.Id, item.Id);
+                await InvokeAsync(StateHasChanged);
+            }
+        }));
+    }
+
+    private void RefreshReadOnly()
+    {
+        listInstance.SetReadOnly(FormContext.ReadOnly || List.ReadOnly);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshData()
+    {
+        listInstance
+            .SetReadOnly(FormContext.ReadOnly || List.ReadOnly)
+            .SetDisabled(FormContext.Disabled || List.Disabled);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshDisabled()
+    {
+        listInstance.SetDisabled(FormContext.Disabled || List.Disabled);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshErrors()
+    {
+        listInstance.SetError(FormContext.GetDataContextError(List!.Id));
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnLanguageChanged()
+    {
+        listInstance.SetTitle(FormContext!.GetLabel(List!.Id));
+
+        if (listInstance.Parameters.TryGetValue(FormComponentParameterKeys.Error, out var err)
+            && err is string s && s.Length > 0)
+            listInstance.SetError(FormContext.GetDataContextError(List!.Id));
+
+        InvokeAsync(StateHasChanged);
+    }
+}

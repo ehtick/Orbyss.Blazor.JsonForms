@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<!-- NuGet Metadata -->
+		<Title>Orbyss Blazor JsonForms Core</Title>
+		<Copyright>© 2025 Orbyss.io</Copyright>
+		<PackageId>Orbyss.Blazor.JsonForms.Core</PackageId>
+		<Authors>Orbyss.io</Authors>
+		<Company>Orbyss</Company>
+		<Description>Contracts-only core for the Orbyss.Blazor.JsonForms schema-driven forms engine — interfaces, context models, interpretation models, and the component factory. Reference this package from UI plugins instead of the full engine.</Description>
+		<PackageTags>blazor;jsonforms;forms;jsonschema;schema;formgenerator;dynamicforms;webforms;formengine;ui;ui-framework;SchemaDriven</PackageTags>
+
+		<RepositoryUrl>https://github.com/orbyss-io/Orbyss.Blazor.JsonForms</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/orbyss-io/Orbyss.Blazor.JsonForms</PackageProjectUrl>
+		<RepositoryType>git</RepositoryType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+		<SupportedPlatform Include="windows" />
+		<SupportedPlatform Include="ios" />
+		<SupportedPlatform Include="android" />
+	</ItemGroup>
+
+	<!-- Allow the engine to access internal Core APIs -->
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>Orbyss.Blazor.JsonForms</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
+		<PackageReference Include="Orbyss.Components.Json.Models" Version="1.1.3" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.18" PrivateAssets="all">
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.1" PrivateAssets="all">
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+</Project>

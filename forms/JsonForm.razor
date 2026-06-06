@@ -1,0 +1,141 @@
+
+<CascadingValue Value="@componentFactory">
+    <CascadingValue Value="@formContext">
+        <CascadingValue Value="@PageTitleClass" Name="PageTitleClass">
+            <CascadingValue Value="@GroupTitleClass" Name="GroupTitleClass">
+            @if (navigationInstance is not null)
+            {
+                var pages = formContext.GetPages();
+                @if (pages.Count() == 1)
+                {
+                    <FormSinglePage OnSubmitClicked="@GetOnSubmitClickedEventCallback" Page="@(pages.First())" HideSubmitButton="@HideSubmitButton" />
+                }
+                else
+                {
+                    <DynamicComponent Type="@navigationInstance.ComponentType" Parameters="navigationInstance.Parameters" />
+                }
+            }
+        </CascadingValue>
+    </CascadingValue>
+    </CascadingValue>
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public bool HideSubmitButton { get; set; }
+
+    [Inject]
+    IServiceProvider ServiceProvider { get; set; } = default!;
+
+    [Parameter]
+    public IFormComponentFactory? ComponentFactory { get; set; }
+
+    [Parameter, EditorRequired]
+    public JsonFormContextOptions? InitOptions { get; set; }
+
+    [Parameter]
+    public IJsonFormContext? FormContext { get; set; }
+
+    [Parameter]
+    public string? GroupTitleClass { get; set; }
+
+    [Parameter]
+    public string? PageTitleClass { get; set; }
+
+    [Parameter]
+    public EventCallback<JToken> OnSubmit { get; set; }
+
+    [CascadingParameter]
+    public string? Language { get; set; }
+
+    [CascadingParameter(Name = nameof(Disabled))]
+    public bool? Disabled { get; set; }
+
+    [CascadingParameter(Name = nameof(ReadOnly))]
+    public bool? ReadOnly { get; set; }
+
+    EventCallback? GetOnSubmitClickedEventCallback => OnSubmit.HasDelegate
+       ? new EventCallback(this, Submit)
+       : null;
+
+    IComponentInstance navigationInstance = default!;
+    IFormComponentFactory componentFactory = default!;
+    IJsonFormContext formContext = default!;
+
+    private Task Submit()
+    {
+        if (formContext!.Validate() && OnSubmit.HasDelegate)
+            return OnSubmit.InvokeAsync(formContext.GetFormData());
+
+        return Task.CompletedTask;
+    }
+
+    protected override void OnInitialized()
+    {
+        componentFactory = ResolveFactory();
+        formContext = ResolveFormContext();
+
+        navigationInstance = componentFactory.CreateNavigation(formContext);
+        navigationInstance
+            .SetParameter(FormComponentParameterKeys.OnSubmitClicked,  GetOnSubmitClickedEventCallback)
+            .SetParameter(FormComponentParameterKeys.HideSubmitButton, HideSubmitButton);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        bool changed = false;
+
+        if (!firstRender && !string.IsNullOrWhiteSpace(Language) && Language != formContext.ActiveLanguage)
+        {
+            formContext.ChangeLanguage(Language!);
+            changed = true;
+        }
+
+        if (!firstRender && Disabled.HasValue && Disabled != formContext.Disabled)
+        {
+            formContext.ChangeDisabled(Disabled.Value);
+            changed = true;
+        }
+
+        if (!firstRender && ReadOnly.HasValue && ReadOnly != formContext.ReadOnly)
+        {
+            formContext.ChangeReadOnly(ReadOnly.Value);
+            changed = true;
+        }
+
+        if (changed)
+            await InvokeAsync(StateHasChanged);
+    }
+
+    private IFormComponentFactory ResolveFactory()
+    {
+        if (ComponentFactory is not null)
+            return ComponentFactory;
+
+        return ServiceProvider.GetService<IFormComponentFactory>()
+            ?? throw new InvalidOperationException(
+                "IFormComponentFactory must be either registered in the DI container or provided as a parameter.");
+    }
+
+    private IJsonFormContext ResolveFormContext()
+    {
+        if (InitOptions is null)
+            throw new ArgumentException("InitOptions must be specified.");
+
+        if (FormContext is not null)
+        {
+            if (FormContext.PageCount == 0)
+                FormContext.Instantiate(InitOptions);
+            return FormContext;
+        }
+
+        var service = ServiceProvider.GetService<IJsonFormContext>();
+        if (service is not null)
+        {
+            service.Instantiate(InitOptions);
+            return service;
+        }
+
+        return JsonFormContextBuilder.BuildAndInstantiate(InitOptions);
+    }
+}

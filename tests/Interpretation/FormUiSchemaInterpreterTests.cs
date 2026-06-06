@@ -170,6 +170,165 @@ public sealed class FormUiSchemaInterpreterTests
         Assert.That(firstRowControlElement.ReadOnly, Is.True);
     }
 
+    // ── Options extraction — GetOption on interpreted models ─────────────────
+
+    [Test]
+    public void When_Control_HasOptions_Then_GetOption_Returns_Correct_Value()
+    {
+        // Arrange
+        const string schemaJson = "{\"properties\":{\"premium\":{\"type\":\"number\"}}}";
+        var schema = JSchema.Parse(schemaJson);
+        var uiSchema = new FormUiSchema(
+            UiSchemaElementType.VerticalLayout,
+            null, null,
+            [
+                new FormUiSchemaElement(
+                    UiSchemaElementType.Control,
+                    null, null, [],
+                    "#/properties/premium",
+                    null,
+                    new JsonObject
+                    {
+                        ["component"] = "slider",
+                        ["step"]      = 100
+                    }
+                )
+            ],
+            null
+        );
+        var sut = GetSut();
+
+        // Act
+        var result = sut.Interpret(uiSchema, schema);
+        var layout = result.Pages[0].InterpretedElements[0] as UiSchemaVerticalLayoutInterpretation;
+        var control = layout!.Rows[0] as UiSchemaControlInterpretation;
+
+        // Assert
+        Assert.That(control, Is.Not.Null);
+        Assert.That($"{control!.GetOption("component")}", Is.EqualTo("slider"));
+        Assert.That($"{control!.GetOption("step")}",      Is.EqualTo("100"));
+    }
+
+    [Test]
+    public void When_Control_HasNoOptions_Then_GetOption_Returns_Null()
+    {
+        // Arrange
+        const string schemaJson = "{\"properties\":{\"name\":{\"type\":\"string\"}}}";
+        var schema = JSchema.Parse(schemaJson);
+        var uiSchema = new FormUiSchema(
+            UiSchemaElementType.VerticalLayout,
+            null, null,
+            [
+                new FormUiSchemaElement(UiSchemaElementType.Control, null, null, [], "#/properties/name", null, null)
+            ],
+            null
+        );
+        var sut = GetSut();
+
+        // Act
+        var result = sut.Interpret(uiSchema, schema);
+        var layout  = result.Pages[0].InterpretedElements[0] as UiSchemaVerticalLayoutInterpretation;
+        var control = layout!.Rows[0] as UiSchemaControlInterpretation;
+
+        // Assert
+        Assert.That(control, Is.Not.Null);
+        Assert.That(control!.GetOption("component"), Is.Null);
+        Assert.That(control!.GetOption("step"),      Is.Null);
+    }
+
+    [Test]
+    public void When_Control_HasJObjectOptions_Then_GetOption_Works()
+    {
+        // Arrange — use a Newtonsoft JObject directly rather than System.Text.Json JsonObject
+        const string schemaJson = "{\"properties\":{\"amount\":{\"type\":\"number\"}}}";
+        var schema = JSchema.Parse(schemaJson);
+        var options = new Newtonsoft.Json.Linq.JObject
+        {
+            ["placeholder"] = "Enter amount",
+            ["min"]         = 0
+        };
+        var uiSchema = new FormUiSchema(
+            UiSchemaElementType.VerticalLayout,
+            null, null,
+            [
+                new FormUiSchemaElement(UiSchemaElementType.Control, null, null, [], "#/properties/amount", null, options)
+            ],
+            null
+        );
+        var sut = GetSut();
+
+        // Act
+        var result  = sut.Interpret(uiSchema, schema);
+        var layout  = result.Pages[0].InterpretedElements[0] as UiSchemaVerticalLayoutInterpretation;
+        var control = layout!.Rows[0] as UiSchemaControlInterpretation;
+
+        // Assert
+        Assert.That(control, Is.Not.Null);
+        Assert.That($"{control!.GetOption("placeholder")}", Is.EqualTo("Enter amount"));
+        Assert.That($"{control!.GetOption("min")}",         Is.EqualTo("0"));
+    }
+
+    [Test]
+    public void When_Interpret_Then_UiSchemaInterpretation_HasOnlyPages()
+    {
+        // Verifies the new simplified UiSchemaInterpretation (no FormUiSchema reference)
+        const string schemaJson = "{\"properties\":{\"x\":{\"type\":\"string\"}}}";
+        var schema = JSchema.Parse(schemaJson);
+        var uiSchema = new FormUiSchema(
+            UiSchemaElementType.VerticalLayout,
+            null, null,
+            [new FormUiSchemaElement(UiSchemaElementType.Control, null, null, [], "#/properties/x", null, null)],
+            null
+        );
+        var sut = GetSut();
+
+        var result = sut.Interpret(uiSchema, schema);
+
+        Assert.That(result.Pages, Has.Length.EqualTo(1));
+        // The type only exposes Pages — no FormUiSchema property exists
+        var type = result.GetType();
+        var formUiSchemaProp = type.GetProperty("FormUiSchema");
+        Assert.That(formUiSchemaProp, Is.Null,
+            "UiSchemaInterpretation must not expose a FormUiSchema property");
+    }
+
+    [Test]
+    public void When_ActionButton_HasOptions_Then_GetOption_Returns_Correct_Value()
+    {
+        // Arrange
+        const string schemaJson = "{}";
+        var schema = JSchema.Parse(schemaJson);
+        var uiSchema = new FormUiSchema(
+            UiSchemaElementType.VerticalLayout,
+            null, null,
+            [
+                new FormUiSchemaElement(
+                    UiSchemaElementType.ActionButton,
+                    "Save",
+                    null, [],
+                    null,
+                    null,
+                    new JsonObject
+                    {
+                        ["actionKey"] = "save-form",
+                        ["variant"]   = "primary"
+                    }
+                )
+            ],
+            null
+        );
+        var sut = GetSut();
+
+        // Act
+        var result  = sut.Interpret(uiSchema, schema);
+        var layout  = result.Pages[0].InterpretedElements[0] as UiSchemaVerticalLayoutInterpretation;
+        var button  = layout!.Rows[0] as UiSchemaActionButtonInterpretation;
+
+        // Assert
+        Assert.That(button, Is.Not.Null);
+        Assert.That($"{button!.GetOption("variant")}", Is.EqualTo("primary"));
+    }
+
     private static FormUiSchemaInterpreter GetSut()
     {
         return new FormUiSchemaInterpreter(

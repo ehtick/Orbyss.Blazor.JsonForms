@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Context;
 using Orbyss.Blazor.JsonForms.Context.Utils;
@@ -186,7 +186,7 @@ public sealed class FormRuleEnforcerTests
             absoluteSchemaPath,
             absoluteSchemaPath.Split('.').Last(),
             parentSchemaPath,
-            new(UiSchema.UiSchemaElementType.Control, null, null, [], "#/properties/address/properties/street", null, null),
+            new Dictionary<string, JToken?>(),
             rule
         );
     }

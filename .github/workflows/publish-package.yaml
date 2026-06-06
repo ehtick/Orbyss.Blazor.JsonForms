@@ -1,0 +1,87 @@
+name: Publish Package
+
+on:
+  workflow_call:
+    inputs:
+      project-path:
+        required: true
+        type: string
+
+      version:
+        required: true
+        type: string
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run unit tests
+        run: dotnet test ./tests --no-build --configuration Release --verbosity normal
+
+  publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Pack NuGet package
+        run: |
+          dotnet pack "${{ inputs.project-path }}" \
+            --configuration Release \
+            --no-build \
+            -p:PackageVersion=${{ inputs.version }} \
+            -p:IncludeSymbols=true \
+            -p:SymbolPackageFormat=snupkg
+
+      - name: Show packed files
+        run: |
+          PROJECT_DIR=$(dirname "${{ inputs.project-path }}")
+          find "$PROJECT_DIR/bin/Release" -type f
+
+      - name: Push NuGet packages
+        run: |
+          PROJECT_DIR=$(dirname "${{ inputs.project-path }}")
+
+          find "$PROJECT_DIR/bin/Release" \
+            -name "*.nupkg" \
+            ! -name "*.symbols.nupkg" \
+            ! -name "*.snupkg" \
+            -exec dotnet nuget push {} \
+              --api-key "${{ secrets.NUGET_API_KEY }}" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate \;
+
+          find "$PROJECT_DIR/bin/Release" \
+            -name "*.snupkg" \
+            -exec dotnet nuget push {} \
+              --api-key "${{ secrets.NUGET_API_KEY }}" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate \;

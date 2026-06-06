@@ -25,7 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\src\Orbyss.Blazor.JsonForms.csproj" />
+	  <ProjectReference Include="..\forms\Orbyss.Blazor.JsonForms.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

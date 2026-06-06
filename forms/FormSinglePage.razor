@@ -1,0 +1,80 @@
+@inherits FormComponentBase
+
+@if (Page is not null && submitButtonInstance is not null)
+{
+    @if (!string.IsNullOrWhiteSpace(pageTitle))
+    {
+        if (!string.IsNullOrWhiteSpace(PageTitleClass))
+        {
+            <span class="@PageTitleClass">@pageTitle</span>
+        }
+        else
+        {
+            <h3>@pageTitle</h3>
+        }
+    }
+
+    <div class="@FormCssClasses.Form">
+        @foreach (var context in Page!.ElementContexts)
+        {
+            <FormElementSelector Context="@context" />
+        }
+    </div>
+
+    @if (OnSubmitClicked.HasValue && OnSubmitClicked.Value.HasDelegate && !HideSubmitButton)
+    {
+        <div class="@FormCssClasses.ButtonRow">
+            <div class="@FormCssClasses.ButtonColumn">
+                <DynamicComponent Type="@submitButtonInstance.ComponentType" Parameters="submitButtonInstance.Parameters" />
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public FormPageContext? Page { get; set; }
+
+    [Parameter, EditorRequired]
+    public bool HideSubmitButton { get; set; }
+
+    [CascadingParameter]
+    public IFormComponentFactory ComponentFactory { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public EventCallback? OnSubmitClicked { get; set; }
+
+    [CascadingParameter(Name = "PageTitleClass")]
+    public string? PageTitleClass { get; set; }
+
+    private IComponentInstance submitButtonInstance = default!;
+    private string? pageTitle;
+
+    protected override void OnInitialized()
+    {
+        SubscribeOnLanguageChanged(() =>
+        {
+            pageTitle = FormContext?.GetLabel(Page!.Id);
+            InvokeAsync(StateHasChanged);
+        });
+
+        pageTitle = FormContext?.GetLabel(Page!.Id);
+
+        submitButtonInstance = ComponentFactory.CreateButton(FormButtonType.Submit, FormContext);
+        submitButtonInstance.SetParameter(FormComponentParameterKeys.OnClicked, GetSubmitCallback());
+    }
+
+    private EventCallback GetSubmitCallback()
+    {
+        if (!OnSubmitClicked.HasValue || !OnSubmitClicked.Value.HasDelegate)
+            return EventCallback.Empty;
+
+        return new EventCallback(this, new Func<Task>(() =>
+        {
+            if (FormContext.Validate(Page!.Id))
+                return OnSubmitClicked.Value.InvokeAsync();
+
+            return Task.CompletedTask;
+        }));
+    }
+}
