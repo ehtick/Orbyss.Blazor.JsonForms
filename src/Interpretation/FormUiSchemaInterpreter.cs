@@ -90,6 +90,7 @@ public sealed class FormUiSchemaInterpreter(IJsonPathInterpreter jsonPathInterpr
             UiSchemaElementType.Group => InterpretVerticalLayout(element, jsonSchema, parentAbsoluteSchemaJsonPath),
             UiSchemaElementType.Control => InterpretControl(element, jsonSchema, parentAbsoluteSchemaJsonPath),
             UiSchemaElementType.ListWithDetail => InterpretList(element, jsonSchema, parentAbsoluteSchemaJsonPath),
+            UiSchemaElementType.ActionButton => InterpretActionButton(element),
             _ => throw new NotSupportedException()
         };
     }
@@ -213,6 +214,20 @@ public sealed class FormUiSchemaInterpreter(IJsonPathInterpreter jsonPathInterpr
         list.SetListDetail(detailInterpretation);
 
         return list;
+    }
+
+    private UiSchemaActionButtonInterpretation InterpretActionButton(FormUiSchemaElement element)
+    {
+        var actionKey = $"{element.GetOption(FormUiSchemaOptionKeys.ActionKey) ?? string.Empty}";
+
+        return new UiSchemaActionButtonInterpretation(
+            (UiSchemaLabelInterpretation)element,
+            IsDisabled(element),
+            IsHidden(element),
+            actionKey,
+            element,
+            GetRule(element)
+        );
     }
 
     private static (double? minimum, double? maximum) GetNumericConstraints(JSchema jsonSchema, string absoluteSchemaJsonPath)

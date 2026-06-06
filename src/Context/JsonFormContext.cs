@@ -378,6 +378,9 @@ public sealed class JsonFormContext(
             await initOptions.InvokeControlInputChanged(control, this);
     }
 
+    public Task InvokeAction(string actionKey)
+        => initOptions?.InvokeAction(actionKey, this) ?? Task.CompletedTask;
+
     private IFormElementContext FindContextById(Guid id)
     {
         foreach (var page in pages)

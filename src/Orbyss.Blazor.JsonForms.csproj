@@ -37,6 +37,13 @@
 			engine after each value or input event.
 			- Added OnInputChanged parameter key to ComponentInstanceParameterKeys. Components that declare an OnInputChanged
 			parameter receive raw input callbacks; those that do not have it stripped automatically.
+			- Added ActionButton as a first-class UI schema element type. Recognised by the interpreter, rule engine, and context
+			factory. Supports all standard rule effects (Show, Hide, Enable, Disable) using the same rule engine as controls.
+			- Added FormActionHandler delegate and RegisterAction on JsonFormContextInitOptions for mapping action keys to async handlers.
+			- Added InvokeAction to IJsonFormContext, called by the engine when an ActionButton is clicked.
+			- Added ActionButtonFormComponentInstanceBase with Label, Disabled, and OnClick parameters.
+			- Added FormActionButton.razor which wires the click callback, resolves the translated label, and respects disabled/hidden state.
+			- Added FormUiSchemaOptionKeys.ActionKey constant.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

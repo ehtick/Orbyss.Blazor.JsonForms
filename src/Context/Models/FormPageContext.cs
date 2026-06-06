@@ -53,6 +53,7 @@ public sealed class FormPageContext(
             UiSchemaElementInterpretationType.HorizontalLayout => FindInHorizontalLayout((FormHorizontalLayoutContext)elementContext, id),
             UiSchemaElementInterpretationType.List => FindInList((FormListContext)elementContext, id),
             UiSchemaElementInterpretationType.Control => elementContext.Id == id ? elementContext : null,
+            UiSchemaElementInterpretationType.ActionButton => elementContext.Id == id ? elementContext : null,
 
             _ => throw new NotSupportedException($"Element type '{elementContext.Interpretation.ElementType} is not supported'")
         };
@@ -69,6 +70,7 @@ public sealed class FormPageContext(
             case UiSchemaElementInterpretationType.List:
                 FindInList((FormListContext)elementContext, predicate, result); break;
             case UiSchemaElementInterpretationType.Control:
+            case UiSchemaElementInterpretationType.ActionButton:
                 if (predicate(elementContext))
                 {
                     result.Add(elementContext);

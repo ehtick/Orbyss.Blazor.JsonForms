@@ -6,5 +6,6 @@ public enum UiSchemaElementInterpretationType
     HorizontalLayout,
     List,
     ListDetails,
-    Control
+    Control,
+    ActionButton
 }

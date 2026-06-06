@@ -84,4 +84,11 @@ public interface IJsonFormContext
     /// Fires any <see cref="JsonFormContextInitOptions.OnControlInputChanged"/> subscribers.
     /// </summary>
     Task NotifyControlInputChanged(Guid controlContextId);
+
+    /// <summary>
+    /// Invokes the action handler registered for the given key via
+    /// <see cref="JsonFormContextInitOptions.RegisterAction"/>.
+    /// Called by the engine when an ActionButton is clicked.
+    /// </summary>
+    Task InvokeAction(string actionKey);
 }

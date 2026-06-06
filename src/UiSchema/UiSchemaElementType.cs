@@ -13,5 +13,6 @@ public enum UiSchemaElementType
     Category,
     Group,
     Control,
-    ListWithDetail
+    ListWithDetail,
+    ActionButton
 }

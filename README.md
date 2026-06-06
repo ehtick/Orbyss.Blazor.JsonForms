@@ -292,6 +292,63 @@ The form re-evaluates rules and refreshes all affected components automatically 
 
 ---
 
+## 🔘 ActionButton — inline action elements
+
+`ActionButton` is a first-class UI schema element type that renders a button anywhere in the form layout. When clicked it invokes a registered async handler that receives the full form context, making it ideal for mid-form actions like premium calculation, address lookup, or search.
+
+### UI schema
+
+```json
+{
+    "type": "ActionButton",
+    "label": "calculateButton",
+    "options": {
+        "actionKey": "calculate-premium"
+    },
+    "rule": {
+        "effect": "Disable",
+        "condition": {
+            "scope": "#/properties/premium",
+            "schema": { "type": "number" }
+        }
+    }
+}
+```
+
+- **`label`** — resolved through the translation context (i18n key or literal string)
+- **`actionKey`** — must match a key registered via `RegisterAction`
+- **`rule`** — optional; supports all standard effects (`Show`, `Hide`, `Enable`, `Disable`) evaluated by the same rule engine as controls
+
+### Registering an action handler
+
+```csharp
+var options = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+
+options.RegisterAction("calculate-premium", async form =>
+{
+    var data = form.GetFormData();
+    var premium = await _premiumService.CalculateAsync(data);
+
+    var ctx = form.FindControl(c => c.AbsoluteDataJsonPath == "$.premium");
+    if (ctx is not null)
+        form.UpdateValue(ctx.Id, JToken.FromObject(premium));
+});
+```
+
+Calling `RegisterAction` with the same key a second time replaces the previous handler. After the handler updates values, the form re-evaluates rules and refreshes all affected components automatically.
+
+### `IFormComponentInstanceProvider`
+
+UI implementations must implement `GetActionButton`:
+
+```csharp
+ActionButtonFormComponentInstanceBase GetActionButton(FormActionButtonContext actionButton);
+```
+
+`ActionButtonFormComponentInstanceBase` exposes `Label` (string?), `Disabled` (bool), and `OnClick` (EventCallback). These are set by the engine — your component just needs to declare matching `[Parameter]` properties and render a button.
+
+---
+
 ## 🛠 Implementing Your Own UI Layer
 
 ### 1. Implement `IFormComponentInstanceProvider`

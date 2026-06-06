@@ -48,4 +48,11 @@ public static class FormUiSchemaOptionKeys
     /// Resolved via the translation context. Schema-defined value overwrites any programmatically set suffix.
     /// </summary>
     public const string SuffixLabel = "suffixLabel";
+
+    /// <summary>
+    /// Key identifying the registered action handler for an <c>ActionButton</c> element.
+    /// Must match a key passed to <c>JsonFormContextInitOptions.RegisterAction</c>.
+    /// Example: "actionKey": "calculate-premium"
+    /// </summary>
+    public const string ActionKey = "actionKey";
 }

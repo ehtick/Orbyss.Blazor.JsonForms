@@ -16,6 +16,9 @@
         case UiSchemaElementInterpretationType.List:
             <FormList List="Context as FormListContext"/>
             break;
+        case UiSchemaElementInterpretationType.ActionButton:
+            <FormActionButton ActionButtonContext="Context as FormActionButtonContext" />
+            break;
     }
 }
 

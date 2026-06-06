@@ -22,6 +22,8 @@ public interface IFormComponentInstanceProvider
     ListFormComponentInstanceBase GetList(FormListContext? list = null);
 
     ListItemFormComponentInstance GetListItem(IFormElementContext? listItem = null);
+
+    ActionButtonFormComponentInstanceBase GetActionButton(FormActionButtonContext actionButton);
 }
 
 public enum FormButtonType

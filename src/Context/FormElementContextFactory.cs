@@ -15,6 +15,7 @@ public sealed class FormElementContextFactory(IJsonPathInterpreter jsonPathInter
             UiSchemaElementInterpretationType.VerticalLayout => CreateVerticalLayout((UiSchemaVerticalLayoutInterpretation)interpretation, parentAbsoluteDataJsonPath),
             UiSchemaElementInterpretationType.HorizontalLayout => CreateHorizontalLayout((UiSchemaHorizontalLayoutInterpretation)interpretation, parentAbsoluteDataJsonPath),
             UiSchemaElementInterpretationType.List => CreateList((UiSchemaListInterpretation)interpretation, parentAbsoluteDataJsonPath),
+            UiSchemaElementInterpretationType.ActionButton => new FormActionButtonContext((UiSchemaActionButtonInterpretation)interpretation),
             _ => throw new NotSupportedException($"Element type '{interpretation.ElementType}' is not supported.")
         };
     }

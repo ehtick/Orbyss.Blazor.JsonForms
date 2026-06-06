@@ -14,6 +14,12 @@ namespace Orbyss.Blazor.JsonForms.Context.Models;
 /// <param name="form">The form context, used to read/write other control values.</param>
 public delegate Task FormControlEventHandler(FormControlContext control, IJsonFormContext form);
 
+/// <summary>
+/// Handler delegate invoked when an <c>ActionButton</c> element is clicked.
+/// </summary>
+/// <param name="form">The form context, used to read/write control values.</param>
+public delegate Task FormActionHandler(IJsonFormContext form);
+
 public sealed class JsonFormContextInitOptions
 {
     public JsonFormContextInitOptions(JSchema dataSchema, FormUiSchema uiSchema, TranslationSchema translationSchema)
@@ -60,4 +66,16 @@ public sealed class JsonFormContextInitOptions
 
     internal Task InvokeControlInputChanged(FormControlContext control, IJsonFormContext form)
         => OnControlInputChanged?.Invoke(control, form) ?? Task.CompletedTask;
+
+    private readonly Dictionary<string, FormActionHandler> _actions = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Registers an action handler invoked when an <c>ActionButton</c> with the given key is clicked.
+    /// Calling this with the same key a second time replaces the previous handler.
+    /// </summary>
+    public void RegisterAction(string key, FormActionHandler handler)
+        => _actions[key] = handler;
+
+    internal Task InvokeAction(string key, IJsonFormContext form)
+        => _actions.TryGetValue(key, out var handler) ? handler(form) : Task.CompletedTask;
 }

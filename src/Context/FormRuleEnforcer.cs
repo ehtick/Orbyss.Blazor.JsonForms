@@ -33,6 +33,10 @@ public sealed class FormRuleEnforcer : IFormRuleEnforcer
         {
             EnforceRule(dataContext, controlContext, controlContext.Interpretation.Rule!, rootContexts);
         }
+        else if (context is FormActionButtonContext actionButtonContext && actionButtonContext.Interpretation.Rule is not null)
+        {
+            EnforceRule(dataContext, actionButtonContext, actionButtonContext.Interpretation.Rule!, rootContexts);
+        }
     }
 
     public void EnforceRulesForPages(IJsonFormDataContext dataContext, FormPageContext[] pages, IFormElementContext[] rootContexts)
@@ -208,6 +212,10 @@ public sealed class FormRuleEnforcer : IFormRuleEnforcer
         {
             controlContext.SetDisabled(value);
         }
+        else if (element is FormActionButtonContext actionButtonContext)
+        {
+            actionButtonContext.SetDisabled(value);
+        }
     }
 
     private static void SetHiddenForElement(IFormElementContext element, bool? value)
@@ -235,9 +243,13 @@ public sealed class FormRuleEnforcer : IFormRuleEnforcer
                 listItem.SetHidden(value);
             }
         }
-        else if (element is FormListContext controlContext)
+        else if (element is FormListContext listContextInner)
         {
-            controlContext.SetHidden(value);
+            listContextInner.SetHidden(value);
+        }
+        else if (element is FormActionButtonContext actionButtonContextInner)
+        {
+            actionButtonContextInner.SetHidden(value);
         }
     }
 }
