@@ -13,11 +13,17 @@ public sealed class UiSchemaControlInterpretation(
     string controlJsonPropertyName,
     string? absoluteParentObjectSchemaPath,
     FormUiSchemaElement element,
-    UiSchemaRuleInterpretation? rule)
+    UiSchemaRuleInterpretation? rule,
+    double? minimum = null,
+    double? maximum = null)
 
     : UiSchemaControlInterpretationBase(labelInterpretation, readOnly, disabled, hidden, relativeSchemaJsonPath, absoluteSchemaJsonPath, controlJsonPropertyName, absoluteParentObjectSchemaPath, element, rule)
 {
     public override UiSchemaElementInterpretationType ElementType => UiSchemaElementInterpretationType.Control;
 
     public ControlType ControlType { get; } = controlType;
+
+    public double? Minimum { get; } = minimum;
+
+    public double? Maximum { get; } = maximum;
 }

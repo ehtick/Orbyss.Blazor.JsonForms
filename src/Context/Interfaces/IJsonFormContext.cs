@@ -38,6 +38,12 @@ public interface IJsonFormContext
 
     string? GetHelperIconText(Guid controlContextId);
 
+    string? GetHelperText(Guid controlContextId);
+
+    string? GetPrefixText(Guid controlContextId);
+
+    string? GetSuffixText(Guid controlContextId);
+
     string? GetCssClass(Guid controlContextId);
 
     IEnumerable<TranslatedEnumItem> GetTranslatedEnumItems(Guid controlContextId);

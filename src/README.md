@@ -163,6 +163,10 @@ These option keys are defined in `FormUiSchemaOptionKeys` and are understood by 
 | `hidden` | Control | `bool` | Hides the control initially (can be revealed by a rule) |
 | `cssClass` | Control | `string` | One or more CSS classes applied to the component. Merged with any programmatically assigned class — schema class is appended last |
 | `helperIconLabel` | Control | `string` | Text shown in a helper icon tooltip. Resolved through the translation context: treated as an i18n key first, falls back to the literal string |
+| `helperTextLabel` | Control | `string` | Helper text shown below the control. Resolved via translation context. Schema value overwrites any programmatically set helper text. |
+| `enumItemOptions` | Control | `object` | Per-enum metadata keyed by enum value. Each entry may contain a `helperText` property. |
+| `prefixLabel` | Control | `string` | Prefix prepended to numeric display values (e.g. `€`). Resolved via translation context. Schema wins. |
+| `suffixLabel` | Control | `string` | Suffix appended to numeric display values (e.g. `m`, `kg`). Resolved via translation context. Schema wins. |
 | `detail` | ListWithDetail | `object` | The UI schema for a list item's detail view |
 
 > 💡 Custom options beyond these can still be read at runtime via `control.Interpretation.GetOption("myKey")` in your `IFormComponentInstanceProvider` implementation.
@@ -274,7 +278,7 @@ else if (!string.IsNullOrWhiteSpace(HelperText))
 | `Disabled` | `bool` | Engine / UI schema |
 | `ReadOnly` | `bool` | Engine / UI schema |
 | `ErrorHelperText` | `string?` | Engine (validation) |
-| `HelperText` | `string?` | Your component instance |
+| `HelperText` | `string?` | Your component instance (overwritten by `helperTextLabel` schema option if set) |
 | `HelperIconText` | `string?` | Engine (from `helperIconLabel` option, translated) |
 | `Class` | `string?` | Engine (merged from `cssClass` option + programmatic) |
 | `Style` | `string?` | Your component instance |
@@ -309,6 +313,17 @@ public virtual ListItemFormComponentInstance GetListItem(IFormElementContext? li
     return new ListItemFormComponentInstance<MyListItem>();
 }
 ```
+
+#### `UiSchemaControlInterpretation` — numeric constraints
+
+`Minimum` (`double?`) and `Maximum` (`double?`) are automatically parsed from the JSON Schema `minimum`/`maximum` keywords and exposed on `control.Interpretation.Minimum` / `control.Interpretation.Maximum`. Use these in your provider to configure range-based components such as sliders.
+
+#### Component instance hierarchy
+
+- `FormComponentInstanceBase` — base for all instances
+  - `InputFormComponentInstanceBase` — standard input fields (label, value, disabled, read-only, errors, helper text)
+    - `NumericInputFormComponentInstanceBase` — adds `PrefixText` and `SuffixText`; schema options `prefixLabel`/`suffixLabel` overwrite these at render time
+    - `DropdownFormComponentInstanceBase` — enum fields (items, multi-select, clearable, searchable)
 
 For components with additional parameters, derive from the appropriate base and override `GetFormInputParameters`:
 

@@ -177,6 +177,51 @@ public sealed class JsonFormContext(
         return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
     }
 
+    public string? GetHelperText(Guid controlContextId)
+    {
+        var match = FindContextById(controlContextId);
+        if (match is not FormControlContext control)
+            return null;
+
+        var optionValue = control.Interpretation.GetOption(FormUiSchemaOptionKeys.HelperTextLabel);
+        if (optionValue is null)
+            return null;
+
+        var literalValue = $"{optionValue}";
+        var labelInterpretation = new Interpretation.UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
+        return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
+    }
+
+    public string? GetPrefixText(Guid controlContextId)
+    {
+        var match = FindContextById(controlContextId);
+        if (match is not FormControlContext control)
+            return null;
+
+        var optionValue = control.Interpretation.GetOption(FormUiSchemaOptionKeys.PrefixLabel);
+        if (optionValue is null)
+            return null;
+
+        var literalValue = $"{optionValue}";
+        var labelInterpretation = new Interpretation.UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
+        return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
+    }
+
+    public string? GetSuffixText(Guid controlContextId)
+    {
+        var match = FindContextById(controlContextId);
+        if (match is not FormControlContext control)
+            return null;
+
+        var optionValue = control.Interpretation.GetOption(FormUiSchemaOptionKeys.SuffixLabel);
+        if (optionValue is null)
+            return null;
+
+        var literalValue = $"{optionValue}";
+        var labelInterpretation = new Interpretation.UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
+        return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
+    }
+
     public string? GetCssClass(Guid controlContextId)
     {
         var match = FindContextById(controlContextId);
@@ -192,8 +237,24 @@ public sealed class JsonFormContext(
         var match = FindContextById(controlContextId);
         var controlContext = CastControl(match);
 
-        return translationContext
-            .TranslateEnum(ActiveLanguage, controlContext.Interpretation) ?? [];
+        var items = translationContext.TranslateEnum(ActiveLanguage, controlContext.Interpretation) ?? [];
+
+        var enumItemOptionsToken = controlContext.Interpretation.GetOption(FormUiSchemaOptionKeys.EnumItemOptions);
+        if (enumItemOptionsToken is null)
+            return items;
+
+        var optionsObject = JObject.Parse($"{enumItemOptionsToken}");
+
+        return items.Select(item =>
+        {
+            if (optionsObject.TryGetValue(item.Value, StringComparison.OrdinalIgnoreCase, out var itemConfig)
+                && itemConfig is JObject itemConfigObj
+                && itemConfigObj.TryGetValue("helperText", StringComparison.OrdinalIgnoreCase, out var helperTextToken))
+            {
+                return new TranslatedEnumItem(item.Label, item.Value, $"{helperTextToken}");
+            }
+            return item;
+        });
     }
 
     public FormPageContext GetPage(int index)

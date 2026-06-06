@@ -16,6 +16,12 @@ public sealed class JsonFormContextTests
     private const string uiSchemaWithCssClass = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"cssClass\":\"my-class\"}}]}";
     private const string uiSchemaWithHelperIconLabel = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"helperIconLabel\":\"helperKey\"}},{\"type\":\"Control\",\"scope\":\"#/properties/surname\",\"options\":{\"helperIconLabel\":\"Literal helper text\"}}]}";
     private const string uiSchemaWithDuplicateScope = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\"},{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"hidden\":true}}]}";
+    private const string uiSchemaWithHelperText = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"helperTextLabel\":\"helperKey\"}},{\"type\":\"Control\",\"scope\":\"#/properties/surname\",\"options\":{\"helperTextLabel\":\"Literal helper text\"}}]}";
+    private const string uiSchemaWithPrefixSuffix = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/age\",\"options\":{\"prefixLabel\":\"Age: \",\"suffixLabel\":\" years\"}}]}";
+    private const string jsonSchemaWithMinMax = "{\"properties\":{\"age\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":120}}}";
+    private const string uiSchemaSimpleAge = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/age\"}]}";
+    private const string uiSchemaWithEnumItemOptions = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/role\",\"options\":{\"enumItemOptions\":{\"admin\":{\"helperText\":\"Full access\"},\"user\":{\"helperText\":\"Standard access\"}}}}]}";
+    private const string jsonSchemaWithEnum = "{\"properties\":{\"role\":{\"type\":\"string\",\"enum\":[\"admin\",\"user\",\"guest\"]}}}";
 
     [Test]
     public void When_Instantiate_Then_SetsUpContext()
@@ -422,5 +428,104 @@ public sealed class JsonFormContextTests
 
         // Assert
         Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public void When_GetHelperText_And_OptionValueIsI18nKey_Then_ReturnsTranslatedLabel()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchemaWithHelperText, translationSchema) { Language = "en" };
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        var result = sut.GetHelperText(firstNameContext.Id);
+
+        Assert.That(result, Is.EqualTo("This is helpful info"));
+    }
+
+    [Test]
+    public void When_GetHelperText_And_OptionValueIsLiteralString_Then_ReturnsLiteralValue()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchemaWithHelperText, translationSchema) { Language = "en" };
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var surnameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "surname");
+
+        var result = sut.GetHelperText(surnameContext.Id);
+
+        Assert.That(result, Is.EqualTo("Literal helper text"));
+    }
+
+    [Test]
+    public void When_GetHelperText_And_OptionIsNotSet_Then_ReturnsNull()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        var result = sut.GetHelperText(firstNameContext.Id);
+
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public void When_GetPrefixText_And_OptionIsSet_Then_ReturnsValue()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchemaWithMinMax, uiSchemaWithPrefixSuffix, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var ageContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "age");
+
+        var result = sut.GetPrefixText(ageContext.Id);
+
+        Assert.That(result, Is.EqualTo("Age: "));
+    }
+
+    [Test]
+    public void When_GetSuffixText_And_OptionIsSet_Then_ReturnsValue()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchemaWithMinMax, uiSchemaWithPrefixSuffix, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var ageContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "age");
+
+        var result = sut.GetSuffixText(ageContext.Id);
+
+        Assert.That(result, Is.EqualTo(" years"));
+    }
+
+    [Test]
+    public void When_InterpretControl_And_SchemaHasMinMax_Then_InterpretationContainsMinMax()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchemaWithMinMax, uiSchemaSimpleAge, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var ageContext = (FormControlContext)verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "age");
+
+        Assert.That(ageContext.Interpretation.Minimum, Is.EqualTo(0));
+        Assert.That(ageContext.Interpretation.Maximum, Is.EqualTo(120));
+    }
+
+    [Test]
+    public void When_GetTranslatedEnumItems_And_EnumItemOptionsSet_Then_ItemsHaveHelperText()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchemaWithEnum, uiSchemaWithEnumItemOptions, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var roleContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "role");
+
+        var items = sut.GetTranslatedEnumItems(roleContext.Id).ToList();
+
+        Assert.That(items.First(x => x.Value == "admin").HelperText, Is.EqualTo("Full access"));
+        Assert.That(items.First(x => x.Value == "user").HelperText, Is.EqualTo("Standard access"));
+        Assert.That(items.First(x => x.Value == "guest").HelperText, Is.Null.Or.Empty);
     }
 }

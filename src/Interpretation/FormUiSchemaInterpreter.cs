@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Schema;
+﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Constants;
 using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
 using Orbyss.Blazor.JsonForms.UiSchema;
@@ -135,6 +136,7 @@ public sealed class FormUiSchemaInterpreter(IJsonPathInterpreter jsonPathInterpr
         var controlJsonPropertyName = jsonPathInterpreter.GetJsonPropertyNameFromPath(absoluteSchemaJsonPath);
         var absoluteParentObjectSchemaPath = jsonPathInterpreter.GetParentPathFromSchemaPath(absoluteSchemaJsonPath);
         var controlType = controlTypeInterpreter.Interpret(jsonSchema, absoluteSchemaJsonPath, absoluteParentObjectSchemaPath);
+        var (minimum, maximum) = GetNumericConstraints(jsonSchema, absoluteSchemaJsonPath);
 
         return new UiSchemaControlInterpretation(
             controlType,
@@ -147,7 +149,9 @@ public sealed class FormUiSchemaInterpreter(IJsonPathInterpreter jsonPathInterpr
             controlJsonPropertyName,
             absoluteParentObjectSchemaPath,
             primitiveControlElement,
-            GetRule(primitiveControlElement)
+            GetRule(primitiveControlElement),
+            minimum,
+            maximum
         );
     }
 
@@ -209,6 +213,21 @@ public sealed class FormUiSchemaInterpreter(IJsonPathInterpreter jsonPathInterpr
         list.SetListDetail(detailInterpretation);
 
         return list;
+    }
+
+    private static (double? minimum, double? maximum) GetNumericConstraints(JSchema jsonSchema, string absoluteSchemaJsonPath)
+    {
+        try
+        {
+            var schemaToken = JToken.Parse($"{jsonSchema}").SelectToken(absoluteSchemaJsonPath, false);
+            if (schemaToken is null) return (null, null);
+            var schema = JSchema.Parse($"{schemaToken}");
+            return (schema.Minimum, schema.Maximum);
+        }
+        catch
+        {
+            return (null, null);
+        }
     }
 
     private static bool IsDisabled(FormUiSchemaElement element)

@@ -56,7 +56,7 @@
 	<ItemGroup>
 		<PackageReference Include="JLio.Client" Version="1.6.1" />
 		<PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
-		<PackageReference Include="Orbyss.Components.Json.Models" Version="1.1.2" />
+		<PackageReference Include="Orbyss.Components.Json.Models" Version="1.1.3" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">

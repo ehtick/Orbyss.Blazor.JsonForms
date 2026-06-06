@@ -21,6 +21,18 @@
         controlInstance.Label = FormContext!.GetLabel(ControlContext!.Id);
         controlInstance.HelperIconText = FormContext!.GetHelperIconText(ControlContext!.Id);
 
+        var schemaHelperText = FormContext!.GetHelperText(ControlContext!.Id);
+        if (schemaHelperText is not null)
+            controlInstance.HelperText = schemaHelperText;
+
+        if (controlInstance is NumericInputFormComponentInstanceBase numericInstance)
+        {
+            var prefix = FormContext!.GetPrefixText(ControlContext!.Id);
+            if (prefix is not null) numericInstance.PrefixText = prefix;
+            var suffix = FormContext!.GetSuffixText(ControlContext!.Id);
+            if (suffix is not null) numericInstance.SuffixText = suffix;
+        }
+
         if (!string.IsNullOrWhiteSpace(controlInstance.ErrorHelperText))
         {
             controlInstance.ErrorHelperText = FormContext.GetDataContextError(ControlContext!.Id);            
@@ -86,6 +98,20 @@
             .Where(c => !string.IsNullOrWhiteSpace(c)));
         controlInstance.ReadOnly = FormContext.ReadOnly || ControlContext.ReadOnly;
         controlInstance.Disabled = FormContext.Disabled || ControlContext.Disabled;
+
+        // HelperText — schema wins over programmatic
+        var schemaHelperText = FormContext!.GetHelperText(ControlContext!.Id);
+        if (schemaHelperText is not null)
+            controlInstance.HelperText = schemaHelperText;
+
+        // PrefixText / SuffixText — only for numeric instances, schema wins
+        if (controlInstance is NumericInputFormComponentInstanceBase numericInstance)
+        {
+            var prefix = FormContext!.GetPrefixText(ControlContext!.Id);
+            if (prefix is not null) numericInstance.PrefixText = prefix;
+            var suffix = FormContext!.GetSuffixText(ControlContext!.Id);
+            if (suffix is not null) numericInstance.SuffixText = suffix;
+        }
     }
 
     private IDictionary<string, object?> GetControlParameters()

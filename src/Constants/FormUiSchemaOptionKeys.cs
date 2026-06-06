@@ -23,4 +23,29 @@ public static class FormUiSchemaOptionKeys
     /// Example: "helperIconLabel": "my.i18n.key"
     /// </summary>
     public const string HelperIconLabel = "helperIconLabel";
+
+    /// <summary>
+    /// Helper text shown below the control.
+    /// Resolved via the translation context (i18n key or literal string).
+    /// Schema-defined value overwrites any programmatically set helper text.
+    /// </summary>
+    public const string HelperTextLabel = "helperTextLabel";
+
+    /// <summary>
+    /// Per-enum metadata object keyed by enum value.
+    /// Each entry may contain a <c>helperText</c> property that is rendered below the enum item label.
+    /// </summary>
+    public const string EnumItemOptions = "enumItemOptions";
+
+    /// <summary>
+    /// Prefix text prepended to numeric display values (e.g. <c>€</c>).
+    /// Resolved via the translation context. Schema-defined value overwrites any programmatically set prefix.
+    /// </summary>
+    public const string PrefixLabel = "prefixLabel";
+
+    /// <summary>
+    /// Suffix text appended to numeric display values (e.g. <c>m</c>, <c>kg</c>).
+    /// Resolved via the translation context. Schema-defined value overwrites any programmatically set suffix.
+    /// </summary>
+    public const string SuffixLabel = "suffixLabel";
 }
