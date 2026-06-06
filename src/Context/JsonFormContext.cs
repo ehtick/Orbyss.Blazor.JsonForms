@@ -225,13 +225,17 @@ public sealed class JsonFormContext(
         return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
     }
 
-    public string? GetCssClass(Guid controlContextId)
+    public string? GetCssClass(Guid elementContextId)
     {
-        var match = FindContextById(controlContextId);
-        if (match is not FormControlContext control)
-            return null;
+        var match = FindContextById(elementContextId);
 
-        var optionValue = control.Interpretation.GetOption(FormUiSchemaOptionKeys.CssClass);
+        var optionValue = match switch
+        {
+            FormControlContext control => control.Interpretation.GetOption(FormUiSchemaOptionKeys.CssClass),
+            FormActionButtonContext btn => btn.Interpretation.GetOption(FormUiSchemaOptionKeys.CssClass),
+            _ => null
+        };
+
         return optionValue is null ? null : $"{optionValue}";
     }
 

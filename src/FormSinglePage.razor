@@ -1,6 +1,6 @@
-﻿@inherits FormComponentBase
+@inherits FormComponentBase
 
-@if (CanRenderContent())
+@if (Page is not null && submitButtonInstance is not null)
 {
     @if (!string.IsNullOrWhiteSpace(pageTitle))
     {
@@ -14,24 +14,20 @@
         }
     }
 
-    <DynamicComponentWithChildContent Type="@(pageGridInstance.ComponentType)" Parameters="pageGridInstance.GetParameters()">
+    <div class="@FormCssClasses.Form">
         @foreach (var context in Page!.ElementContexts)
         {
             <FormElementSelector Context="@context" />
         }
-    </DynamicComponentWithChildContent>
+    </div>
 
     @if (OnSubmitClicked.HasValue && OnSubmitClicked.Value.HasDelegate && !HideSubmitButton)
     {
-        <DynamicComponentWithChildContent Type="@(buttonGridInstance.ComponentType)" Parameters="buttonGridInstance.GetParameters()">
-            <DynamicComponentWithChildContent Type="@(buttonGridRowInstance.ComponentType)" Parameters="buttonGridRowInstance.GetParameters()">
-                <DynamicComponentWithChildContent Type="@(buttonGridColumnInstance.ComponentType)" Parameters="buttonGridColumnInstance.GetParameters()">
-
-                    <DynamicComponent Type="@(submitButtonInstance.ComponentType)" Parameters="submitButtonInstance.GetParameters()" />
-
-                </DynamicComponentWithChildContent>
-            </DynamicComponentWithChildContent>
-        </DynamicComponentWithChildContent>
+        <div class="@FormCssClasses.ButtonRow">
+            <div class="@FormCssClasses.ButtonColumn">
+                <DynamicComponent Type="@(submitButtonInstance.ComponentType)" Parameters="submitButtonInstance.GetParameters()" />
+            </div>
+        </div>
     }
 }
 
@@ -51,41 +47,20 @@
     [CascadingParameter(Name = "PageTitleClass")]
     public string? PageTitleClass { get; set; }
 
-    IFormComponentInstance pageGridInstance = default!;
-    IFormComponentInstance buttonGridInstance = default!;
-    IFormComponentInstance buttonGridRowInstance = default!;
-    IFormComponentInstance buttonGridColumnInstance = default!;
     ButtonFormComponentInstanceBase submitButtonInstance = default!;
 
     private string? pageTitle;
-
-    bool CanRenderContent()
-    {
-        return Page is not null
-            && pageGridInstance is not null
-            && buttonGridInstance is not null
-            && buttonGridRowInstance is not null
-            && buttonGridColumnInstance is not null
-            && submitButtonInstance is not null;
-    }
 
     protected override void OnInitialized()
     {
         SubscribeOnLanguageChanged(() =>
         {
             pageTitle = FormContext?.GetLabel(Page!.Id);
-
             submitButtonInstance.Language = FormContext?.ActiveLanguage;
-
             InvokeAsync(StateHasChanged);
         });
 
         pageTitle = FormContext?.GetLabel(Page!.Id);
-
-        pageGridInstance = ComponentInstanceProvider.GetGrid(form: FormContext, page: Page);
-        buttonGridInstance = ComponentInstanceProvider.GetGrid(FormContext, Page);
-        buttonGridRowInstance = ComponentInstanceProvider.GetGridRow(null);
-        buttonGridColumnInstance = ComponentInstanceProvider.GetGridColumn(null);
 
         submitButtonInstance = ComponentInstanceProvider.GetButton(FormButtonType.Submit, FormContext);
         submitButtonInstance.Language = FormContext?.ActiveLanguage;

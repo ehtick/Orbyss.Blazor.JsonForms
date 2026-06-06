@@ -1,4 +1,4 @@
-﻿@inherits FormComponentBase
+@inherits FormComponentBase
 
 @if (LayoutContext is not null)
 {
@@ -16,10 +16,19 @@
 
     @foreach (var row in LayoutContext.Rows)
     {
-        var rowInstance = ComponentInstanceProvider.GetGridRow(row);
-        <DynamicComponentWithChildContent Type="@(rowInstance.ComponentType)" Parameters="rowInstance.GetParameters()">
-            <FormElementSelector Context="@row" />
-        </DynamicComponentWithChildContent>
+        <div class="@FormCssClasses.Row">
+            @if (row is FormHorizontalLayoutContext)
+            {
+                @* Horizontal layout manages its own column divs — render directly *@
+                <FormElementSelector Context="@row" />
+            }
+            else
+            {
+                <div class="@FormCssClasses.Column">
+                    <FormElementSelector Context="@row" />
+                </div>
+            }
+        </div>
     }
 }
 
@@ -28,9 +37,6 @@
 
     [Parameter, EditorRequired]
     public FormVerticalLayoutContext? LayoutContext { get; set; }
-
-    [CascadingParameter]
-    public IFormComponentInstanceProvider ComponentInstanceProvider { get; set; } = default!;
 
     [CascadingParameter(Name = "GroupTitleClass")]
     public string? GroupTitleClass { get; set; }

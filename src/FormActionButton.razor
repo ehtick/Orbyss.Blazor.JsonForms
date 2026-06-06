@@ -35,6 +35,10 @@
         buttonInstance.Label = FormContext!.GetLabel(ActionButtonContext!.Id);
         buttonInstance.Disabled = ActionButtonContext!.Disabled;
         buttonInstance.OnClick = EventCallback.Factory.Create(this, OnClick);
+
+        var programmaticClass = buttonInstance.Class;
+        var schemaClass = FormContext!.GetCssClass(ActionButtonContext!.Id);
+        buttonInstance.Class = CssClassHelper.Merge(programmaticClass, schemaClass);
     }
 
     private IDictionary<string, object?> GetParameters() => buttonInstance.GetParameters();

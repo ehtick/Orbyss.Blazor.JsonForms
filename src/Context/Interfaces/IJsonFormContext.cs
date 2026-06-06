@@ -44,7 +44,7 @@ public interface IJsonFormContext
 
     string? GetSuffixText(Guid controlContextId);
 
-    string? GetCssClass(Guid controlContextId);
+    string? GetCssClass(Guid elementContextId);
 
     IEnumerable<TranslatedEnumItem> GetTranslatedEnumItems(Guid controlContextId);
 

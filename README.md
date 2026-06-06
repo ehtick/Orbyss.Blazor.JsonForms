@@ -185,11 +185,89 @@ This means you can freely mix i18n keys and plain text in the same form.
 
 ### `cssClass` — merging behaviour
 
-If a control has both a schema-defined class and a programmatically assigned class (set on the component instance by your `IFormComponentInstanceProvider`), the two are merged:
+If a control has both a schema-defined class and a programmatically assigned class (set on the component instance by your `IFormComponentInstanceProvider`), the two are **appended** by default:
 
 ```
 final class = "{programmaticClass} {schemaClass}"
 ```
+
+To **replace** the default class entirely, prefix the value with `!`:
+
+```json
+"options": {
+    "cssClass": "!my-full-override-class"
+}
+```
+
+This strips the programmatic default and uses only `my-full-override-class`. Useful when the default class conflicts with your design system. The `!` is stripped from the final output.
+
+---
+
+## 🎨 CSS Variables & Default Classes
+
+The engine ships with `orbyss-forms.css` which defines CSS custom properties you can override to theme the form without touching component code.
+
+### Including the stylesheet
+
+```html
+<link rel="stylesheet" href="_content/Orbyss.Blazor.JsonForms/orbyss-forms.css" />
+```
+
+### Overriding variables
+
+Set any variable in your own CSS — no need to include the base stylesheet if you define them all:
+
+```css
+:root {
+    /* Brand / theme */
+    --orbyss-form-primary:         #e91e63;
+    --orbyss-form-primary-text:    #ffffff;
+    --orbyss-form-error:           #c0392b;
+    --orbyss-form-border-radius:   8px;
+    --orbyss-form-font-family:     'Inter', sans-serif;
+    --orbyss-form-label-font-size: 0.8125rem;
+    --orbyss-form-input-height:    3rem;
+
+    /* Spacing — set this one value and all layout gaps follow */
+    --orbyss-form-spacing:         1.25rem;
+
+    /* Layout gaps — each defaults to --orbyss-form-spacing if not set */
+    --orbyss-form-row-gap:         1.25rem;   /* vertical gap between rows */
+    --orbyss-form-column-gap:      0.75rem;   /* horizontal gap between columns */
+    --orbyss-form-button-gap:      1rem;      /* gap + top-margin for button row */
+}
+```
+
+All variable names are exposed as string constants in `FormCssVariables` so you can reference them safely from C# if needed.
+
+### Layout CSS classes
+
+Layout containers are plain `<div>` elements — no Syncfusion dependency. All classes come from `FormCssClasses`:
+
+| Class | Value | Rendered by |
+|---|---|---|
+| `FormCssClasses.Form` | `orbyss-form` | Outer page wrapper (`FormSinglePage`) |
+| `FormCssClasses.Row` | `orbyss-form-row` | Each row in a vertical layout |
+| `FormCssClasses.Column` | `orbyss-form-column` | Each column in a horizontal layout |
+| `FormCssClasses.ButtonRow` | `orbyss-form-button-row` | Row containing submit / nav buttons |
+| `FormCssClasses.ButtonColumn` | `orbyss-form-button-column` | Column wrapping each button |
+| `FormCssClasses.ButtonRowSpaceBetween` | `orbyss-form-button-row--space-between` | Modifier for stepper prev + next layout |
+
+### Default CSS classes on control instances
+
+Each control component instance ships with a default `Class` value from `FormCssClasses`:
+
+| Class constant | Value | Applied to |
+|---|---|---|
+| `FormCssClasses.TextInput` | `orbyss-form-text-input` | Text inputs |
+| `FormCssClasses.NumberInput` | `orbyss-form-number-input` | Integer and number inputs |
+| `FormCssClasses.Dropdown` | `orbyss-form-dropdown` | Dropdown and multi-select |
+| `FormCssClasses.BooleanInput` | `orbyss-form-boolean-input` | Checkbox / switch |
+| `FormCssClasses.Slider` | `orbyss-form-slider` | Numeric sliders |
+| `FormCssClasses.EnumBlocks` | `orbyss-form-enum-blocks` | Enum block selectors |
+| `FormCssClasses.ActionButton` | `orbyss-form-action-button` | Action buttons |
+
+Use `cssClass` in your UI schema to append, or `!cssClass` to replace.
 
 ---
 

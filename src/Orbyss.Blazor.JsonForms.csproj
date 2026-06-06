@@ -44,6 +44,30 @@
 			- Added ActionButtonFormComponentInstanceBase with Label, Disabled, and OnClick parameters.
 			- Added FormActionButton.razor which wires the click callback, resolves the translated label, and respects disabled/hidden state.
 			- Added FormUiSchemaOptionKeys.ActionKey constant.
+				- Added FormCssVariables static class with CSS custom property name constants (--orbyss-form-primary,
+				--orbyss-form-error, --orbyss-form-border-radius, etc.) for host-app theming without component changes.
+				- Added FormCssClasses static class with CSS class name constants for all control types
+				(orbyss-form-text-input, orbyss-form-action-button, etc.).
+				- Added CssClassHelper.Merge utility: appends cssClass option to the component default by default; if the
+				value starts with ! the remainder replaces the default entirely (e.g. "!my-class" discards the engine default).
+				- Added wwwroot/orbyss-forms.css — a base stylesheet defining all CSS variables with sensible defaults.
+				Include via: _content/Orbyss.Blazor.JsonForms/orbyss-forms.css. Override any variable in your own CSS.
+				- Syncfusion component instances (text, number, dropdown, checkbox, slider, enum blocks, action button) now
+				each ship with a typed default Class value from FormCssClasses, giving host stylesheets stable hook points.
+				- GetCssClass on IJsonFormContext now also resolves the cssClass option for FormActionButtonContext, not just
+				controls.
+				- Removed GetGrid, GetGridRow, and GetGridColumn from IFormComponentInstanceProvider. Layout containers
+				are now plain divs emitted directly by the engine razor files — no provider involvement required.
+				- FormVerticalLayout, FormHorizontalLayout, FormSinglePage rewritten to emit semantic div elements with
+				FormCssClasses constants instead of routing through DynamicComponentWithChildContent for layout.
+				- Added FormCssClasses.ButtonRow, ButtonColumn, ButtonRowSpaceBetween for the submit / navigation button
+				area and the stepper prev+next spread layout.
+				- Added three granular layout spacing variables to FormCssVariables and orbyss-forms.css:
+				--orbyss-form-row-gap (vertical gap between rows), --orbyss-form-column-gap (horizontal gap between
+				columns), --orbyss-form-button-gap (button row gap and top margin). All default to --orbyss-form-spacing
+				so a single override still controls everything.
+				- Core engine project added to the Syncfusion solution file so both projects are visible and navigable
+				in a single Visual Studio window.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

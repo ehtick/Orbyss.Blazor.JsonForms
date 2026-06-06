@@ -94,8 +94,7 @@
 
         var programmaticClass = controlInstance.Class;
         var schemaClass = FormContext!.GetCssClass(ControlContext!.Id);
-        controlInstance.Class = string.Join(" ", new[] { programmaticClass, schemaClass }
-            .Where(c => !string.IsNullOrWhiteSpace(c)));
+        controlInstance.Class = CssClassHelper.Merge(programmaticClass, schemaClass);
         controlInstance.ReadOnly = FormContext.ReadOnly || ControlContext.ReadOnly;
         controlInstance.Disabled = FormContext.Disabled || ControlContext.Disabled;
 

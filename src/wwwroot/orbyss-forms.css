@@ -1,0 +1,93 @@
+/*
+ * orbyss-forms.css — Orbyss.Blazor.JsonForms
+ *
+ * Defines the CSS custom properties (variables) used by the form engine.
+ * Override any of these in your own stylesheet to theme the form without
+ * touching component code. Your hosting app's variables take precedence
+ * through normal CSS cascade rules.
+ *
+ * Usage in _Host.cshtml / App.razor / index.html:
+ *   <link rel="stylesheet" href="_content/Orbyss.Blazor.JsonForms/orbyss-forms.css" />
+ */
+
+:root {
+    /* Primary brand colour — used for focused/active elements and action buttons */
+    --orbyss-form-primary: #1976d2;
+
+    /* Text colour rendered on top of the primary background */
+    --orbyss-form-primary-text: #ffffff;
+
+    /* Colour used for validation errors and error helper text */
+    --orbyss-form-error: #d32f2f;
+
+    /* Border-radius applied to inputs, dropdowns, and buttons */
+    --orbyss-form-border-radius: 4px;
+
+    /* Base spacing unit — used as the default for all layout gaps below.
+       Override the specific variables below if you need finer control. */
+    --orbyss-form-spacing: 1rem;
+
+    /* Gap between rows inside the outer form wrapper */
+    --orbyss-form-row-gap: var(--orbyss-form-spacing);
+
+    /* Gap between columns inside a row */
+    --orbyss-form-column-gap: var(--orbyss-form-spacing);
+
+    /* Gap between individual buttons in the button row, and its top margin */
+    --orbyss-form-button-gap: var(--orbyss-form-spacing);
+
+    /* Font family inherited by all form elements */
+    --orbyss-form-font-family: inherit;
+
+    /* Font size for labels and helper text */
+    --orbyss-form-label-font-size: 0.875rem;
+
+    /* Height of single-line input controls */
+    --orbyss-form-input-height: 2.5rem;
+}
+
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+
+/* Outer wrapper rendered by FormSinglePage around all page elements */
+.orbyss-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--orbyss-form-row-gap);
+    width: 100%;
+}
+
+/* Each logical row inside a vertical layout */
+.orbyss-form-row {
+    display: flex;
+    flex-direction: row;
+    gap: var(--orbyss-form-column-gap);
+    flex-wrap: wrap;
+    width: 100%;
+    align-items: flex-start;
+}
+
+/* Each column inside a row — fills available space equally by default */
+.orbyss-form-column {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* Row that holds submit / prev / next buttons — right-aligned */
+.orbyss-form-button-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: var(--orbyss-form-button-gap);
+    margin-top: var(--orbyss-form-button-gap);
+    width: 100%;
+}
+
+/* Column wrapping an individual button — no stretching */
+.orbyss-form-button-column {
+    flex: 0 0 auto;
+}
+
+/* Modifier: spread buttons to opposite ends (stepper with prev + next both visible) */
+.orbyss-form-button-row--space-between {
+    justify-content: space-between;
+}
