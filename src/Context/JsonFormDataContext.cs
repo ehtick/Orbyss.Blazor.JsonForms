@@ -89,6 +89,95 @@ public sealed class JsonFormDataContext(
         jsonTransformer.RemoveValue(removedItemAbsolutePath, GetFormData());
     }
 
+    // ── Array (inline repeater) ───────────────────────────────────────────────
+
+    public void InstantiateArray(FormArrayContext arrayContext)
+    {
+        var formData = GetFormData();
+        var arrayData = formData.SelectToken(arrayContext.AbsoluteDataJsonPath, false);
+
+        if (arrayData is null)
+        {
+            jsonTransformer.AddValue(arrayContext.AbsoluteDataJsonPath, formData, new JArray());
+            arrayData = formData.SelectToken(arrayContext.AbsoluteDataJsonPath, true);
+        }
+        else if (arrayData is not JArray)
+        {
+            throw new InvalidOperationException(
+                $"Expected a JSON array at path '{arrayContext.AbsoluteDataJsonPath}', but found '{arrayData.GetType().Name}'.");
+        }
+
+        var existingArray = (JArray)arrayData!;
+        while (arrayContext.Items.Length < existingArray.Count)
+        {
+            AddArrayItemInternal(arrayContext);
+        }
+    }
+
+    public void AddArrayItem(FormArrayContext arrayContext)
+    {
+        var newItemPath = jsonPathInterpreter.AddIndexToPath(
+            arrayContext.AbsoluteDataJsonPath,
+            arrayContext.Items.Length);
+
+        if (GetFormData().SelectToken(newItemPath, false) is null)
+            jsonTransformer.AddValue(arrayContext.AbsoluteDataJsonPath, GetFormData(), new JObject());
+
+        AddArrayItemInternal(arrayContext);
+    }
+
+    public void RemoveArrayItem(FormArrayContext arrayContext, Guid itemId)
+    {
+        var removedIndex = arrayContext.RemoveItemById(itemId);
+        var removedPath  = jsonPathInterpreter.AddIndexToPath(arrayContext.AbsoluteDataJsonPath, removedIndex);
+        jsonTransformer.RemoveValue(removedPath, GetFormData());
+
+        // Rebuild all remaining item contexts so their data paths match the new indices.
+        RebuildArrayItems(arrayContext);
+    }
+
+    public void MoveArrayItem(FormArrayContext arrayContext, int fromIndex, int toIndex)
+    {
+        if (fromIndex == toIndex) return;
+
+        var formData = GetFormData();
+        var array    = (JArray)(formData.SelectToken(arrayContext.AbsoluteDataJsonPath, true)
+            ?? throw new InvalidOperationException($"Expected a JSON array at '{arrayContext.AbsoluteDataJsonPath}'."));
+
+        var item = array[fromIndex];
+        array.RemoveAt(fromIndex);
+        array.Insert(toIndex, item);
+
+        // Rebuild all item contexts so their data paths match the new order.
+        arrayContext.ClearItems();
+        RebuildArrayItems(arrayContext);
+    }
+
+    private void AddArrayItemInternal(FormArrayContext arrayContext)
+    {
+        var index    = arrayContext.Items.Length;
+        var itemPath = jsonPathInterpreter.AddIndexToPath(arrayContext.AbsoluteDataJsonPath, index);
+        var elementContext = elementContextFactory.Create(
+            arrayContext.Interpretation.ItemsInterpretation, itemPath);
+        arrayContext.AddItem(new FormArrayItemContext(index, elementContext));
+    }
+
+    private void RebuildArrayItems(FormArrayContext arrayContext)
+    {
+        arrayContext.ClearItems();
+        var formData  = GetFormData();
+        var arrayData = formData.SelectToken(arrayContext.AbsoluteDataJsonPath, false) as JArray;
+        if (arrayData is null) return;
+
+        for (var i = 0; i < arrayData.Count; i++)
+        {
+            var itemPath       = jsonPathInterpreter.AddIndexToPath(arrayContext.AbsoluteDataJsonPath, i);
+            var elementContext = elementContextFactory.Create(
+                arrayContext.Interpretation.ItemsInterpretation, itemPath);
+            arrayContext.AddItem(new FormArrayItemContext(i, elementContext));
+        }
+    }
+
     public void InstantiateList(FormListContext listContext)
     {
         var formData = GetFormData();

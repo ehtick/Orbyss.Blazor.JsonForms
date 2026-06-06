@@ -48,7 +48,7 @@ Then reference a UI implementation package or build your own.
 <JsonForm InitOptions="@options" />
 
 @code {
-    JsonFormContextInitOptions options = new(
+    JsonFormContextOptions options = new(
         jsonSchema,
         uiSchema,
         translationSchema
@@ -273,7 +273,7 @@ Use `cssClass` in your UI schema to append, or `!cssClass` to replace.
 
 ## 🔔 Reacting to Value Changes
 
-`JsonFormContextInitOptions` exposes two multi-subscriber events that fire during the form lifecycle:
+`JsonFormContextOptions` exposes two multi-subscriber events that fire during the form lifecycle:
 
 | Event | When it fires |
 |---|---|
@@ -291,7 +291,7 @@ delegate Task FormControlEventHandler(FormControlContext control, IJsonFormConte
 **`OnControlValueChanged`** — fires once per committed change (blur, selection, toggle):
 
 ```csharp
-var options = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+var options = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
 
 options.OnControlValueChanged += async (control, form) =>
 {
@@ -333,7 +333,7 @@ options.OnControlValueChanged += TriggerPremiumRecalculation;
 
 ### Disposing handlers
 
-The events live on `JsonFormContextInitOptions`, which you own. If your handler captures a short-lived object (e.g. `this` in a Blazor component) and `initOptions` outlives it, unsubscribe in `Dispose`:
+The events live on `JsonFormContextOptions`, which you own. If your handler captures a short-lived object (e.g. `this` in a Blazor component) and `initOptions` outlives it, unsubscribe in `Dispose`:
 
 ```csharp
 public void Dispose()
@@ -400,7 +400,7 @@ The form re-evaluates rules and refreshes all affected components automatically 
 ### Registering an action handler
 
 ```csharp
-var options = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+var options = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
 
 options.RegisterAction("calculate-premium", async form =>
 {
@@ -424,6 +424,92 @@ ActionButtonFormComponentInstanceBase GetActionButton(FormActionButtonContext ac
 ```
 
 `ActionButtonFormComponentInstanceBase` exposes `Label` (string?), `Disabled` (bool), and `OnClick` (EventCallback). These are set by the engine — your component just needs to declare matching `[Parameter]` properties and render a button.
+
+---
+
+## 📋 ArrayLayout — Inline Array Repeater
+
+`ArrayLayout` is a first-class UI schema element type that renders a JSON array as an inline, editable list of item rows.
+
+### UI schema
+
+```json
+{
+    "type": "ArrayLayout",
+    "scope": "#/properties/addresses",
+    "options": {
+        "addLabel": "addAddress"
+    }
+}
+```
+
+The `addLabel` option is resolved through the translation schema. When omitted the add button defaults to `+`.
+
+### Explicit item layout
+
+By default the engine introspects `items.properties` from the JSON Schema and generates a `HorizontalLayout` with one `Control` per property. Provide an `items` element to override this:
+
+```json
+{
+    "type": "ArrayLayout",
+    "scope": "#/properties/addresses",
+    "items": {
+        "type": "HorizontalLayout",
+        "elements": [
+            { "type": "Control", "scope": "#/properties/street" },
+            { "type": "Control", "scope": "#/properties/city" }
+        ]
+    }
+}
+```
+
+### Constraints
+
+`minItems` and `maxItems` from the JSON Schema are validated on form submission and reported as standard form errors.
+
+### Reacting to array mutations
+
+`JsonFormContextOptions` exposes three named-delegate events that fire after each array mutation:
+
+```csharp
+delegate Task ArrayItemAddedHandler(FormArrayContext arrayContext, int addedIndex, IJsonFormContext form);
+delegate Task ArrayItemRemovedHandler(FormArrayContext arrayContext, int removedIndex, IJsonFormContext form);
+delegate Task ArrayItemMovedHandler(FormArrayContext arrayContext, int fromIndex, int toIndex, IJsonFormContext form);
+```
+
+Subscribe the same way as control events:
+
+```csharp
+var options = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+
+options.OnArrayItemAdded += (array, addedIndex, form) =>
+{
+    Console.WriteLine($"Item added at index {addedIndex}");
+    return Task.CompletedTask;
+};
+
+options.OnArrayItemRemoved += (array, removedIndex, form) =>
+{
+    Console.WriteLine($"Item removed from index {removedIndex}");
+    return Task.CompletedTask;
+};
+
+options.OnArrayItemMoved += (array, fromIndex, toIndex, form) =>
+{
+    Console.WriteLine($"Item moved from {fromIndex} to {toIndex}");
+    return Task.CompletedTask;
+};
+```
+
+### `IFormComponentInstanceProvider`
+
+UI implementations must implement `GetArrayLayout`:
+
+```csharp
+ArrayLayoutFormComponentInstanceBase GetArrayLayout(FormArrayContext arrayContext);
+```
+
+`ArrayLayoutFormComponentInstanceBase` exposes `ArrayContext` (`FormArrayContext`) and `AddLabel` (`string?`). These are set by the engine before each render.
 
 ---
 

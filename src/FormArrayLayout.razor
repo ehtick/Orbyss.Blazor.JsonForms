@@ -1,0 +1,36 @@
+@inherits FormComponentBase
+
+@if (ArrayContext is not null && arrayInstance is not null)
+{
+    <DynamicComponent Type="arrayInstance.ComponentType" Parameters="GetInstanceParameters()" />
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public FormArrayContext? ArrayContext { get; set; }
+
+    [CascadingParameter]
+    public IFormComponentInstanceProvider InstanceProvider { get; set; } = default!;
+
+    private ArrayLayoutFormComponentInstanceBase? arrayInstance;
+
+    protected override void OnInitialized()
+    {
+        SubscribeOnDataChanged(() => InvokeAsync(StateHasChanged));
+        SubscribeOnLanguageChanged(() => InvokeAsync(StateHasChanged));
+        SubscribeOnReadOnlyChanged(() => InvokeAsync(StateHasChanged));
+        SubscribeOnDisabledChanged(() => InvokeAsync(StateHasChanged));
+
+        arrayInstance = InstanceProvider.GetArrayLayout(ArrayContext!);
+        FormContext.InstantiateArray(ArrayContext!.Id);
+
+        base.OnInitialized();
+    }
+
+    private IDictionary<string, object?> GetInstanceParameters()
+    {
+        arrayInstance!.ArrayContext = ArrayContext;
+        arrayInstance.AddLabel = FormContext.GetArrayAddLabel(ArrayContext!.Id);
+        return arrayInstance.GetParameters();
+    }
+}

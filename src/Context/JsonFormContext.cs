@@ -22,7 +22,7 @@ public sealed class JsonFormContext(
     private FormPageContext[] pages = [];
     private string? activeLanguage;
     private JObject options = [];
-    private JsonFormContextInitOptions? initOptions;
+    private JsonFormContextOptions? initOptions;
 
     private bool disabled;
     private bool readOnly;
@@ -42,7 +42,7 @@ public sealed class JsonFormContext(
 
     public bool ReadOnly => readOnly;
 
-    public void Instantiate(JsonFormContextInitOptions initOpts)
+    public void Instantiate(JsonFormContextOptions initOpts)
     {
         if (pages.Length > 0)
         {
@@ -225,6 +225,18 @@ public sealed class JsonFormContext(
         return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
     }
 
+    public string? GetArrayAddLabel(Guid arrayContextId)
+    {
+        var match = FindContextById(arrayContextId);
+        if (match is not FormArrayContext array) return null;
+
+        var rawKey = array.Interpretation.AddLabel;
+        if (string.IsNullOrWhiteSpace(rawKey)) return null;
+
+        var labelInterp = new Interpretation.UiSchemaLabelInterpretation(Label: rawKey, I18n: rawKey);
+        return translationContext.TranslateLabel(ActiveLanguage, labelInterp) ?? rawKey;
+    }
+
     public string? GetCssClass(Guid elementContextId)
     {
         var match = FindContextById(elementContextId);
@@ -294,6 +306,66 @@ public sealed class JsonFormContext(
         notificationHandler.Notify(JsonFormNotificationType.OnDataChanged);
     }
 
+    public void InstantiateArray(Guid arrayContextId)
+    {
+        var match = FindContextById(arrayContextId);
+        var arrayContext = CastArray(match);
+        dataContext.InstantiateArray(arrayContext);
+    }
+
+    public void AddArrayItem(Guid arrayContextId)
+    {
+        var match = FindContextById(arrayContextId);
+        var arrayContext = CastArray(match);
+        dataContext.AddArrayItem(arrayContext);
+        var addedIndex = arrayContext.Items.Length - 1;
+        EnforceRules();
+        notificationHandler.Notify(JsonFormNotificationType.OnDataChanged);
+        _ = initOptions?.InvokeArrayItemAdded(arrayContext, addedIndex, this);
+    }
+
+    public void RemoveArrayItem(Guid arrayContextId, Guid arrayItemId)
+    {
+        var match = FindContextById(arrayContextId);
+        var arrayContext = CastArray(match);
+        // Capture the index before removal so we can pass it to the event
+        var removedIndex = arrayContext.Items
+            .Select((item, i) => (item, i))
+            .FirstOrDefault(x => x.item.Id == arrayItemId).i;
+        dataContext.RemoveArrayItem(arrayContext, arrayItemId);
+        EnforceRules();
+        notificationHandler.Notify(JsonFormNotificationType.OnDataChanged);
+        _ = initOptions?.InvokeArrayItemRemoved(arrayContext, removedIndex, this);
+    }
+
+    public void MoveArrayItem(Guid arrayContextId, int fromIndex, int toIndex)
+    {
+        var match = FindContextById(arrayContextId);
+        var arrayContext = CastArray(match);
+        dataContext.MoveArrayItem(arrayContext, fromIndex, toIndex);
+        EnforceRules();
+        notificationHandler.Notify(JsonFormNotificationType.OnDataChanged);
+        _ = initOptions?.InvokeArrayItemMoved(arrayContext, fromIndex, toIndex, this);
+    }
+
+    public Task NotifyArrayItemAdded(Guid arrayContextId, int addedIndex)
+    {
+        var match = FindContextById(arrayContextId);
+        return initOptions?.InvokeArrayItemAdded(CastArray(match), addedIndex, this) ?? Task.CompletedTask;
+    }
+
+    public Task NotifyArrayItemRemoved(Guid arrayContextId, int removedIndex)
+    {
+        var match = FindContextById(arrayContextId);
+        return initOptions?.InvokeArrayItemRemoved(CastArray(match), removedIndex, this) ?? Task.CompletedTask;
+    }
+
+    public Task NotifyArrayItemMoved(Guid arrayContextId, int fromIndex, int toIndex)
+    {
+        var match = FindContextById(arrayContextId);
+        return initOptions?.InvokeArrayItemMoved(CastArray(match), fromIndex, toIndex, this) ?? Task.CompletedTask;
+    }
+
     public void ChangeLanguage(string language)
     {
         Validate();
@@ -323,6 +395,12 @@ public sealed class JsonFormContext(
     {
         return context as FormListContext
             ?? throw new InvalidCastException($"Context of type '{context.GetType()}' could not be cast to type '{typeof(FormListContext)}'");
+    }
+
+    private static FormArrayContext CastArray(IFormElementContext context)
+    {
+        return context as FormArrayContext
+            ?? throw new InvalidCastException($"Context of type '{context.GetType()}' could not be cast to type '{typeof(FormArrayContext)}'");
     }
 
     private void EnforceRules()

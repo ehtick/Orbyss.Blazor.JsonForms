@@ -51,8 +51,15 @@ public static class FormUiSchemaOptionKeys
 
     /// <summary>
     /// Key identifying the registered action handler for an <c>ActionButton</c> element.
-    /// Must match a key passed to <c>JsonFormContextInitOptions.RegisterAction</c>.
+    /// Must match a key passed to <c>JsonFormContextOptions.RegisterAction</c>.
     /// Example: "actionKey": "calculate-premium"
     /// </summary>
     public const string ActionKey = "actionKey";
+
+    /// <summary>
+    /// Translation key used as the label for the "add item" button on an <c>ArrayLayout</c> element.
+    /// Resolved via the translation schema. When omitted the default label <c>+</c> is shown.
+    /// Example: "addLabel": "addAddress"
+    /// </summary>
+    public const string AddLabel = "addLabel";
 }

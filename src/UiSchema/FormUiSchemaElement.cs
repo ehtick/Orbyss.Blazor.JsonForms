@@ -14,6 +14,15 @@ public sealed record FormUiSchemaElement(
        [property: JsonProperty(PropertyName = "rule"), JsonPropertyName("rule")] UiSchemaElementRule? Rule,
        [property: JsonProperty(PropertyName = "options"), JsonPropertyName("options")] object? Options)
 {
+    /// <summary>
+    /// Optional UI schema element describing the layout of a single array item.
+    /// Used by <c>ArrayLayout</c> elements. When absent, a <c>HorizontalLayout</c> is
+    /// auto-generated from the JSON Schema <c>items.properties</c>.
+    /// </summary>
+    [Newtonsoft.Json.JsonProperty(PropertyName = "items")]
+    [System.Text.Json.Serialization.JsonPropertyName("items")]
+    public FormUiSchemaElement? Items { get; init; }
+
     public bool HasOption(string key)
     {
         return OptionsReader.HasOption(Options, key);

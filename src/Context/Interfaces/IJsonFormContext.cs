@@ -18,7 +18,7 @@ public interface IJsonFormContext
 
     bool ReadOnly { get; }
 
-    void Instantiate(JsonFormContextInitOptions initOptions);
+    void Instantiate(JsonFormContextOptions initOptions);
 
     JToken? GetFormOption(string key);
 
@@ -46,6 +46,12 @@ public interface IJsonFormContext
 
     string? GetCssClass(Guid elementContextId);
 
+    /// <summary>
+    /// Resolves the "add item" label for an <c>ArrayLayout</c> element through the translation schema.
+    /// Returns <c>null</c> when no <c>addLabel</c> option is set; the component should default to <c>+</c>.
+    /// </summary>
+    string? GetArrayAddLabel(Guid arrayContextId);
+
     IEnumerable<TranslatedEnumItem> GetTranslatedEnumItems(Guid controlContextId);
 
     FormPageContext GetPage(int index);
@@ -55,6 +61,36 @@ public interface IJsonFormContext
     void AddListItem(Guid listContextId);
 
     void RemoveListItem(Guid listContextId, Guid listItemContextId);
+
+    // ── Array (inline repeater) ───────────────────────────────────────────────
+
+    /// <summary>
+    /// Populates the array context from existing JSON data.  Call once on first render.
+    /// </summary>
+    void InstantiateArray(Guid arrayContextId);
+
+    /// <summary>Appends a new empty item to the array and triggers a UI refresh.</summary>
+    void AddArrayItem(Guid arrayContextId);
+
+    /// <summary>Removes the item identified by <paramref name="arrayItemId"/> and triggers a UI refresh.</summary>
+    void RemoveArrayItem(Guid arrayContextId, Guid arrayItemId);
+
+    /// <summary>
+    /// Moves the item at <paramref name="fromIndex"/> to <paramref name="toIndex"/> (drag-to-reorder)
+    /// and triggers a UI refresh.
+    /// </summary>
+    void MoveArrayItem(Guid arrayContextId, int fromIndex, int toIndex);
+
+    // ── Array notifications ───────────────────────────────────────────────────
+
+    /// <summary>Fires the <c>OnArrayItemAdded</c> event registered on <c>JsonFormContextOptions</c>.</summary>
+    Task NotifyArrayItemAdded(Guid arrayContextId, int addedIndex);
+
+    /// <summary>Fires the <c>OnArrayItemRemoved</c> event registered on <c>JsonFormContextOptions</c>.</summary>
+    Task NotifyArrayItemRemoved(Guid arrayContextId, int removedIndex);
+
+    /// <summary>Fires the <c>OnArrayItemMoved</c> event registered on <c>JsonFormContextOptions</c>.</summary>
+    Task NotifyArrayItemMoved(Guid arrayContextId, int fromIndex, int toIndex);
 
     void ChangeLanguage(string language);
 
@@ -75,19 +111,19 @@ public interface IJsonFormContext
 
     /// <summary>
     /// Called by the form engine after a control's committed value changes.
-    /// Fires any <see cref="JsonFormContextInitOptions.OnControlValueChanged"/> subscribers.
+    /// Fires any <see cref="JsonFormContextOptions.OnControlValueChanged"/> subscribers.
     /// </summary>
     Task NotifyControlValueChanged(Guid controlContextId);
 
     /// <summary>
     /// Called by the form engine after a control receives a raw input event.
-    /// Fires any <see cref="JsonFormContextInitOptions.OnControlInputChanged"/> subscribers.
+    /// Fires any <see cref="JsonFormContextOptions.OnControlInputChanged"/> subscribers.
     /// </summary>
     Task NotifyControlInputChanged(Guid controlContextId);
 
     /// <summary>
     /// Invokes the action handler registered for the given key via
-    /// <see cref="JsonFormContextInitOptions.RegisterAction"/>.
+    /// <see cref="JsonFormContextOptions.RegisterAction"/>.
     /// Called by the engine when an ActionButton is clicked.
     /// </summary>
     Task InvokeAction(string actionKey);

@@ -51,4 +51,24 @@ public static class FormCssClasses
     /// (e.g. a stepper with both Previous and Next visible at the same time).
     /// </summary>
     public const string ButtonRowSpaceBetween = "orbyss-form-button-row--space-between";
+
+    // ── Array layout ─────────────────────────────────────────────────────────────
+
+    /// <summary>Outer wrapper around an entire array (all items + add row).</summary>
+    public const string Array = "orbyss-form-array";
+
+    /// <summary>Row wrapper for a single array item (controls + action area).</summary>
+    public const string ArrayItem = "orbyss-form-array-item";
+
+    /// <summary>Flex area inside an item row that holds the field controls.</summary>
+    public const string ArrayItemControls = "orbyss-form-array-item-controls";
+
+    /// <summary>Area inside an item row that holds the drag handle and remove button.</summary>
+    public const string ArrayItemActions = "orbyss-form-array-item-actions";
+
+    /// <summary>Row at the bottom of the array that contains the add button.</summary>
+    public const string ArrayAddRow = "orbyss-form-array-add-row";
+
+    /// <summary>Applied to the item row when it is the current drag-over target.</summary>
+    public const string ArrayItemDragOver = "orbyss-form-array-item--drag-over";
 }

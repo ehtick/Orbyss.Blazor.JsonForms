@@ -16,6 +16,7 @@ public sealed class FormElementContextFactory(IJsonPathInterpreter jsonPathInter
             UiSchemaElementInterpretationType.HorizontalLayout => CreateHorizontalLayout((UiSchemaHorizontalLayoutInterpretation)interpretation, parentAbsoluteDataJsonPath),
             UiSchemaElementInterpretationType.List => CreateList((UiSchemaListInterpretation)interpretation, parentAbsoluteDataJsonPath),
             UiSchemaElementInterpretationType.ActionButton => new FormActionButtonContext((UiSchemaActionButtonInterpretation)interpretation),
+            UiSchemaElementInterpretationType.ArrayLayout  => CreateArray((UiSchemaArrayLayoutInterpretation)interpretation, parentAbsoluteDataJsonPath),
             _ => throw new NotSupportedException($"Element type '{interpretation.ElementType}' is not supported.")
         };
     }
@@ -103,6 +104,21 @@ public sealed class FormElementContextFactory(IJsonPathInterpreter jsonPathInter
         .ToArray();
 
         return new FormVerticalLayoutContext(interpretation, rows);
+    }
+
+    private FormArrayContext CreateArray(UiSchemaArrayLayoutInterpretation interpretation, string? parentAbsoluteDataPath)
+    {
+        if (!string.IsNullOrWhiteSpace(parentAbsoluteDataPath))
+        {
+            var relativeDataPath      = jsonPathInterpreter.FromJsonSchemaPath(interpretation.RelativeSchemaJsonPath);
+            var absoluteDataPath      = jsonPathInterpreter.JoinJsonPaths(parentAbsoluteDataPath, relativeDataPath);
+            var absoluteParentDataPath = jsonPathInterpreter.GetParentPathFromDataPath(absoluteDataPath);
+            return new FormArrayContext(interpretation, absoluteDataPath, absoluteParentDataPath);
+        }
+
+        var absDataPath     = jsonPathInterpreter.FromJsonSchemaPath(interpretation.AbsoluteSchemaJsonPath);
+        var absParentPath   = jsonPathInterpreter.GetParentPathFromDataPath(absDataPath);
+        return new FormArrayContext(interpretation, absDataPath, absParentPath);
     }
 
     private FormHorizontalLayoutContext CreateHorizontalLayout(UiSchemaHorizontalLayoutInterpretation interpretation, string? parentAbsoluteDataPath)

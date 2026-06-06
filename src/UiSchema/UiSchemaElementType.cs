@@ -14,5 +14,6 @@ public enum UiSchemaElementType
     Group,
     Control,
     ListWithDetail,
-    ActionButton
+    ActionButton,
+    ArrayLayout
 }

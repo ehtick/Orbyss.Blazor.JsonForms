@@ -91,3 +91,52 @@
 .orbyss-form-button-row--space-between {
     justify-content: space-between;
 }
+
+/* ─── Array layout (inline repeater) ─────────────────────────────────────── */
+
+/* Outer wrapper for the whole array (all items + add row) */
+.orbyss-form-array {
+    display: flex;
+    flex-direction: column;
+    gap: var(--orbyss-form-row-gap);
+    width: 100%;
+}
+
+/* Row wrapper for a single array item */
+.orbyss-form-array-item {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--orbyss-form-column-gap);
+    width: 100%;
+    cursor: grab;
+}
+
+/* Highlighted state when dragging an item over this row */
+.orbyss-form-array-item--drag-over {
+    outline: 2px dashed var(--orbyss-form-primary);
+    outline-offset: 2px;
+}
+
+/* Flex area that holds the field controls — fills remaining width */
+.orbyss-form-array-item-controls {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* Compact area for the drag handle and remove button */
+.orbyss-form-array-item-actions {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Row at the bottom of the array for the add-item button */
+.orbyss-form-array-add-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-top: var(--orbyss-form-row-gap);
+}

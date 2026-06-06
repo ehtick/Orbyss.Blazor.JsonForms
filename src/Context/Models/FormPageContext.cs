@@ -49,11 +49,12 @@ public sealed class FormPageContext(
     {
         return elementContext.Interpretation.ElementType switch
         {
-            UiSchemaElementInterpretationType.VerticalLayout => FindInVerticalLayout((FormVerticalLayoutContext)elementContext, id),
+            UiSchemaElementInterpretationType.VerticalLayout  => FindInVerticalLayout((FormVerticalLayoutContext)elementContext, id),
             UiSchemaElementInterpretationType.HorizontalLayout => FindInHorizontalLayout((FormHorizontalLayoutContext)elementContext, id),
-            UiSchemaElementInterpretationType.List => FindInList((FormListContext)elementContext, id),
-            UiSchemaElementInterpretationType.Control => elementContext.Id == id ? elementContext : null,
-            UiSchemaElementInterpretationType.ActionButton => elementContext.Id == id ? elementContext : null,
+            UiSchemaElementInterpretationType.List            => FindInList((FormListContext)elementContext, id),
+            UiSchemaElementInterpretationType.ArrayLayout     => FindInArray((FormArrayContext)elementContext, id),
+            UiSchemaElementInterpretationType.Control         => elementContext.Id == id ? elementContext : null,
+            UiSchemaElementInterpretationType.ActionButton    => elementContext.Id == id ? elementContext : null,
 
             _ => throw new NotSupportedException($"Element type '{elementContext.Interpretation.ElementType} is not supported'")
         };
@@ -69,6 +70,8 @@ public sealed class FormPageContext(
                 FindInHorizontalLayout((FormHorizontalLayoutContext)elementContext, predicate, result); break;
             case UiSchemaElementInterpretationType.List:
                 FindInList((FormListContext)elementContext, predicate, result); break;
+            case UiSchemaElementInterpretationType.ArrayLayout:
+                FindInArray((FormArrayContext)elementContext, predicate, result); break;
             case UiSchemaElementInterpretationType.Control:
             case UiSchemaElementInterpretationType.ActionButton:
                 if (predicate(elementContext))
@@ -127,6 +130,29 @@ public sealed class FormPageContext(
             return horizontalLayoutContext;
 
         return FindInElements(horizontalLayoutContext.Columns, id);
+    }
+
+    private IFormElementContext? FindInArray(FormArrayContext arrayContext, Guid id)
+    {
+        if (arrayContext.Id == id)
+            return arrayContext;
+
+        foreach (var item in arrayContext.Items)
+        {
+            var result = FindInElement(item.ElementContext, id);
+            if (result is not null)
+                return result;
+        }
+        return null;
+    }
+
+    private void FindInArray(FormArrayContext arrayContext, Func<IFormElementContext, bool> predicate, List<IFormElementContext> result)
+    {
+        if (predicate(arrayContext))
+            result.Add(arrayContext);
+
+        foreach (var item in arrayContext.Items)
+            FindInElement(item.ElementContext, predicate, result);
     }
 
     private IFormElementContext? FindInElements(IEnumerable<IFormElementContext> elementContexts, Guid id)

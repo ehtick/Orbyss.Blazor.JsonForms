@@ -15,7 +15,7 @@ public sealed class UiSchemaActionButtonInterpretation(
     public override UiSchemaElementInterpretationType ElementType => UiSchemaElementInterpretationType.ActionButton;
 
     /// <summary>
-    /// Maps to the key registered via <c>JsonFormContextInitOptions.RegisterAction</c>.
+    /// Maps to the key registered via <c>JsonFormContextOptions.RegisterAction</c>.
     /// </summary>
     public string ActionKey { get; } = actionKey;
 

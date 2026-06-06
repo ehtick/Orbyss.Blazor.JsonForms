@@ -68,6 +68,49 @@
 				so a single override still controls everything.
 				- Core engine project added to the Syncfusion solution file so both projects are visible and navigable
 				in a single Visual Studio window.
+				- Added UiSchemaElementType.ArrayLayout and UiSchemaElementInterpretationType.ArrayLayout.
+				- Added FormUiSchemaOptionKeys.AddLabel — translation key for the array "add item" button.
+				- Added FormUiSchemaElement.Items — optional per-item UI schema element for ArrayLayout.
+				  When absent, a HorizontalLayout is auto-generated from the JSON Schema items.properties.
+				- Added UiSchemaArrayLayoutInterpretation with resolved schema paths, addLabel key, and
+				  the per-item IUiSchemaElementInterpretation (explicit or auto-generated).
+				- Added FormArrayItemContext — a simple DTO with Id, Index, and ElementContext that
+				  represents one item in an inline array repeater.
+				- Added FormArrayContext — extends FormControlContextBase; manages an ordered list of
+				  FormArrayItemContext entries and validates minItems/maxItems on submit.
+				- Added InstantiateArray, AddArrayItem, RemoveArrayItem, MoveArrayItem to
+				  IJsonFormDataContext and JsonFormDataContext. Remove and Move both rebuild all item
+				  contexts from scratch so data paths stay in sync with the new JArray indices.
+				- Added the same four methods plus GetArrayAddLabel to IJsonFormContext / JsonFormContext.
+				  GetArrayAddLabel resolves the addLabel option through the translation schema
+				  (same pattern as GetHelperIconText).
+				- FormElementContextFactory handles UiSchemaElementInterpretationType.ArrayLayout,
+				  producing a FormArrayContext with the correct absolute data path.
+				- FormElementSelector.razor now routes ArrayLayout to the new FormArrayLayout.razor.
+				- FormPageContext.FindInElement and FindInElement(predicate) handle ArrayLayout,
+				  recursing into each item's ElementContext.
+				- FormRuleEnforcer handles ArrayLayout in EnforceRule, SetDisabledForElement, and
+				  SetHiddenForElement.
+				- Added ArrayLayoutFormComponentInstanceBase with ArrayContext and AddLabel parameters.
+				- Added GetArrayLayout to IFormComponentInstanceProvider.
+				- Added array-related CSS classes to FormCssClasses (Array, ArrayItem, ArrayItemControls,
+				  ArrayItemActions, ArrayAddRow, ArrayItemDragOver) with matching rules in orbyss-forms.css.
+				- Added three named delegate types on JsonFormContextOptions for array lifecycle hooks:
+				  ArrayItemAddedHandler(arrayContext, addedIndex, form),
+				  ArrayItemRemovedHandler(arrayContext, removedIndex, form), and
+				  ArrayItemMovedHandler(arrayContext, fromIndex, toIndex, form).
+				  Named parameters make handler signatures self-documenting, especially for Move where
+				  fromIndex/toIndex would otherwise be ambiguous plain integers.
+				- Added OnArrayItemAdded, OnArrayItemRemoved, OnArrayItemMoved multi-subscriber events
+				  to JsonFormContextOptions. Handlers fire after the mutation and rule re-evaluation,
+				  using the same += pattern as OnControlValueChanged.
+				- Added NotifyArrayItemAdded, NotifyArrayItemRemoved, NotifyArrayItemMoved to
+				  IJsonFormContext for callers that need to fire the events manually.
+				- Renamed JsonFormContextInitOptions to JsonFormContextOptions (removed "Init" from the
+				  name). The class, constructor, and all references in the engine have been updated.
+				- Fixed a pre-existing bug in FormRuleEnforcer.SetHiddenForElement where the method
+				  incorrectly called SetDisabled instead of SetHidden at its entry point, causing hidden
+				  rules to silently disable elements rather than hide them.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

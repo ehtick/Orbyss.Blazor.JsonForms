@@ -10,7 +10,7 @@ namespace Orbyss.Blazor.JsonForms.Context.Utils;
 public static class JsonFormContextBuilder
 {
     public static IJsonFormContext BuildAndInstantiate(
-        JsonFormContextInitOptions options,
+        JsonFormContextOptions options,
         IJsonFormDataContext? dataContext = null,
         IJsonFormTranslationContext? translationContext = null,
         IJsonFormNotificationHandler? notificationHandler = null,

@@ -91,6 +91,7 @@ public sealed class FormUiSchemaInterpreter(IJsonPathInterpreter jsonPathInterpr
             UiSchemaElementType.Control => InterpretControl(element, jsonSchema, parentAbsoluteSchemaJsonPath),
             UiSchemaElementType.ListWithDetail => InterpretList(element, jsonSchema, parentAbsoluteSchemaJsonPath),
             UiSchemaElementType.ActionButton => InterpretActionButton(element),
+            UiSchemaElementType.ArrayLayout => InterpretArrayLayout(element, jsonSchema, parentAbsoluteSchemaJsonPath),
             _ => throw new NotSupportedException()
         };
     }
@@ -228,6 +229,108 @@ public sealed class FormUiSchemaInterpreter(IJsonPathInterpreter jsonPathInterpr
             element,
             GetRule(element)
         );
+    }
+
+    private UiSchemaArrayLayoutInterpretation InterpretArrayLayout(FormUiSchemaElement arrayElement, JSchema jsonSchema, string? parentAbsoluteSchemaJsonPath)
+    {
+        var arrayScope = arrayElement.Scope
+            ?? throw new InvalidOperationException("ArrayLayout element must have a scope defined");
+
+        var arrayItemsScope = string.Concat(arrayScope, "/items");
+
+        var arraySchemaJsonPath      = jsonPathInterpreter.FromElementScope(arrayScope);
+        var arrayItemsSchemaJsonPath = jsonPathInterpreter.FromElementScope(arrayItemsScope);
+
+        var absoluteArraySchemaJsonPath = !string.IsNullOrWhiteSpace(parentAbsoluteSchemaJsonPath)
+            ? jsonPathInterpreter.JoinJsonPaths(parentAbsoluteSchemaJsonPath, arraySchemaJsonPath)
+            : arraySchemaJsonPath;
+
+        var absoluteArrayItemsSchemaJsonPath = !string.IsNullOrWhiteSpace(parentAbsoluteSchemaJsonPath)
+            ? jsonPathInterpreter.JoinJsonPaths(parentAbsoluteSchemaJsonPath, arrayItemsSchemaJsonPath)
+            : arrayItemsSchemaJsonPath;
+
+        var jsonPropertyName            = jsonPathInterpreter.GetJsonPropertyNameFromPath(absoluteArraySchemaJsonPath);
+        var absoluteParentObjectSchemaPath = jsonPathInterpreter.GetParentPathFromSchemaPath(absoluteArraySchemaJsonPath);
+
+        var addLabel = arrayElement.HasOption(FormUiSchemaOptionKeys.AddLabel)
+            ? $"{arrayElement.GetOption(FormUiSchemaOptionKeys.AddLabel)}"
+            : null;
+
+        // Use the explicit items UI element when provided; otherwise auto-generate a HorizontalLayout
+        // from the JSON Schema items.properties so simple arrays work without any extra UI schema.
+        var itemsUiElement = arrayElement.Items
+            ?? GenerateItemsHorizontalLayout(jsonSchema, absoluteArrayItemsSchemaJsonPath);
+
+        var itemsInterpretation = Interpret(itemsUiElement, jsonSchema, absoluteArrayItemsSchemaJsonPath);
+
+        return new UiSchemaArrayLayoutInterpretation(
+            (UiSchemaLabelInterpretation)arrayElement,
+            IsReadOnly(arrayElement),
+            IsDisabled(arrayElement),
+            IsHidden(arrayElement),
+            arraySchemaJsonPath,
+            absoluteArraySchemaJsonPath,
+            arrayItemsSchemaJsonPath,
+            absoluteArrayItemsSchemaJsonPath,
+            jsonPropertyName,
+            absoluteParentObjectSchemaPath,
+            addLabel,
+            itemsInterpretation,
+            arrayElement,
+            GetRule(arrayElement)
+        );
+    }
+
+    /// <summary>
+    /// Builds a <c>HorizontalLayout</c> element that contains one <c>Control</c> per property
+    /// declared in the JSON Schema at <paramref name="absoluteItemsSchemaJsonPath"/>.
+    /// Used as the fallback when no <c>items</c> UI element is specified.
+    /// </summary>
+    private static FormUiSchemaElement GenerateItemsHorizontalLayout(JSchema jsonSchema, string absoluteItemsSchemaJsonPath)
+    {
+        try
+        {
+            var schemaToken = JToken.Parse($"{jsonSchema}").SelectToken(absoluteItemsSchemaJsonPath, false);
+            if (schemaToken is not null)
+            {
+                var itemSchema = JSchema.Parse($"{schemaToken}");
+                if (itemSchema.Properties.Count > 0)
+                {
+                    var controls = itemSchema.Properties.Keys
+                        .Select(name => new FormUiSchemaElement(
+                            UiSchemaElementType.Control,
+                            Label: null,
+                            I18n: null,
+                            Elements: [],
+                            Scope: $"#/properties/{name}",
+                            Rule: null,
+                            Options: null))
+                        .ToArray();
+
+                    return new FormUiSchemaElement(
+                        UiSchemaElementType.HorizontalLayout,
+                        Label: null,
+                        I18n: null,
+                        Elements: controls,
+                        Scope: null,
+                        Rule: null,
+                        Options: null);
+                }
+            }
+        }
+        catch
+        {
+            // fall through to empty layout
+        }
+
+        return new FormUiSchemaElement(
+            UiSchemaElementType.HorizontalLayout,
+            Label: null,
+            I18n: null,
+            Elements: [],
+            Scope: null,
+            Rule: null,
+            Options: null);
     }
 
     private static (double? minimum, double? maximum) GetNumericConstraints(JSchema jsonSchema, string absoluteSchemaJsonPath)

@@ -17,6 +17,8 @@ public interface IFormComponentInstanceProvider
     ListItemFormComponentInstance GetListItem(IFormElementContext? listItem = null);
 
     ActionButtonFormComponentInstanceBase GetActionButton(FormActionButtonContext actionButton);
+
+    ArrayLayoutFormComponentInstanceBase GetArrayLayout(FormArrayContext arrayContext);
 }
 
 public enum FormButtonType

@@ -7,5 +7,6 @@ public enum UiSchemaElementInterpretationType
     List,
     ListDetails,
     Control,
-    ActionButton
+    ActionButton,
+    ArrayLayout
 }

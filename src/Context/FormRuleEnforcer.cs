@@ -29,6 +29,10 @@ public sealed class FormRuleEnforcer : IFormRuleEnforcer
         {
             EnforceRule(dataContext, listContext, listContext.Interpretation.Rule!, rootContexts);
         }
+        else if (context is FormArrayContext arrayContext && arrayContext.Interpretation.Rule is not null)
+        {
+            EnforceRule(dataContext, arrayContext, arrayContext.Interpretation.Rule!, rootContexts);
+        }
         else if (context is FormControlContext controlContext && controlContext.Interpretation.Rule is not null)
         {
             EnforceRule(dataContext, controlContext, controlContext.Interpretation.Rule!, rootContexts);
@@ -208,6 +212,14 @@ public sealed class FormRuleEnforcer : IFormRuleEnforcer
                 listItem.SetDisabled(value);
             }
         }
+        else if (element is FormArrayContext arrayContext)
+        {
+            arrayContext.SetDisabled(value);
+            foreach (var arrayItem in arrayContext.Items)
+            {
+                SetDisabledForElement(arrayItem.ElementContext, value);
+            }
+        }
         else if (element is FormControlContext controlContext)
         {
             controlContext.SetDisabled(value);
@@ -220,7 +232,7 @@ public sealed class FormRuleEnforcer : IFormRuleEnforcer
 
     private static void SetHiddenForElement(IFormElementContext element, bool? value)
     {
-        element.SetDisabled(value);
+        element.SetHidden(value);
         if (element is FormVerticalLayoutContext verticalLayoutContext)
         {
             foreach (var row in verticalLayoutContext.Rows)
@@ -243,9 +255,13 @@ public sealed class FormRuleEnforcer : IFormRuleEnforcer
                 listItem.SetHidden(value);
             }
         }
-        else if (element is FormListContext listContextInner)
+        else if (element is FormArrayContext arrayContext)
         {
-            listContextInner.SetHidden(value);
+            arrayContext.SetHidden(value);
+            foreach (var arrayItem in arrayContext.Items)
+            {
+                SetHiddenForElement(arrayItem.ElementContext, value);
+            }
         }
         else if (element is FormActionButtonContext actionButtonContextInner)
         {
