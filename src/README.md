@@ -190,6 +190,105 @@ final class = "{programmaticClass} {schemaClass}"
 
 ---
 
+## 🔔 Reacting to Value Changes
+
+`JsonFormContextInitOptions` exposes two multi-subscriber events that fire during the form lifecycle:
+
+| Event | When it fires |
+|---|---|
+| `OnControlValueChanged` | After a control's committed value changes (blur, selection, toggle) |
+| `OnControlInputChanged` | On every raw input event (e.g. each keystroke in a text field) |
+
+Both use the same delegate:
+
+```csharp
+delegate Task FormControlEventHandler(FormControlContext control, IJsonFormContext form)
+```
+
+### Subscribing
+
+**`OnControlValueChanged`** — fires once per committed change (blur, selection, toggle):
+
+```csharp
+var options = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+
+options.OnControlValueChanged += async (control, form) =>
+{
+    // Check which control changed using its interpretation or custom options
+    var addressScope = $"{control.Interpretation.GetOption("addressScope")}";
+    if (string.IsNullOrWhiteSpace(addressScope)) return;
+
+    // Look up the target control by data path and write the result back
+    var addressCtx = form.FindControl(c => c.AbsoluteDataJsonPath == addressScope);
+    if (addressCtx is null) return;
+
+    var address = await _addressService.LookupAsync($"{form.GetValue(control.Id)}");
+    form.UpdateValue(addressCtx.Id, JToken.FromObject(address));
+};
+```
+
+**`OnControlInputChanged`** — fires on every raw input event (e.g. each keystroke). Use this for live search, character counters, or instant feedback. Only fires for input-type controls (text fields); selection controls such as dropdowns use `OnControlValueChanged`:
+
+```csharp
+options.OnControlInputChanged += async (control, form) =>
+{
+    // Example: live search — fire a query on every keystroke
+    if (control.AbsoluteDataJsonPath == "$.searchQuery")
+    {
+        var results = await _searchService.SearchAsync($"{form.GetValue(control.Id)}");
+        var resultsCtx = form.FindControl(c => c.AbsoluteDataJsonPath == "$.searchResults");
+        if (resultsCtx is not null)
+            form.UpdateValue(resultsCtx.Id, JToken.FromObject(results));
+    }
+};
+```
+
+Multiple subscribers are supported on both events — just `+=` again:
+
+```csharp
+options.OnControlValueChanged += LogValueChange;
+options.OnControlValueChanged += TriggerPremiumRecalculation;
+```
+
+### Disposing handlers
+
+The events live on `JsonFormContextInitOptions`, which you own. If your handler captures a short-lived object (e.g. `this` in a Blazor component) and `initOptions` outlives it, unsubscribe in `Dispose`:
+
+```csharp
+public void Dispose()
+{
+    options.OnControlValueChanged -= HandleValueChanged;
+}
+```
+
+In typical Blazor usage, `initOptions` is a field on the same component that subscribes to it. Both go out of scope together when the component is disposed, so no explicit `-=` is needed.
+
+### Debouncing
+
+`OnControlInputChanged` fires on every keystroke. Debouncing — if needed — is the caller's responsibility. The engine does not impose any delay.
+
+### Finding and updating controls
+
+`IJsonFormContext` exposes two search methods:
+
+```csharp
+// First match, or null
+FormControlContext? ctx = form.FindControl(c => c.AbsoluteDataJsonPath == "$.street");
+
+// All matches
+IEnumerable<FormControlContext> ctxs = form.FindControls(c => c.AbsoluteDataJsonPath.StartsWith("$.address"));
+```
+
+Once you have a context, write a new value using its `Id`:
+
+```csharp
+form.UpdateValue(ctx.Id, JToken.FromObject("Baker Street"));
+```
+
+The form re-evaluates rules and refreshes all affected components automatically after `UpdateValue`.
+
+---
+
 ## 🛠 Implementing Your Own UI Layer
 
 ### 1. Implement `IFormComponentInstanceProvider`

@@ -528,4 +528,151 @@ public sealed class JsonFormContextTests
         Assert.That(items.First(x => x.Value == "user").HelperText, Is.EqualTo("Standard access"));
         Assert.That(items.First(x => x.Value == "guest").HelperText, Is.Null.Or.Empty);
     }
+
+    // ── FindControl / FindControls ──────────────────────────────────────────
+
+    [Test]
+    public void When_FindControl_ByDataPath_Then_ReturnsCorrectContext()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+
+        var result = sut.FindControl(c => c.AbsoluteDataJsonPath == "$.firstName");
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.AbsoluteDataJsonPath, Is.EqualTo("$.firstName"));
+    }
+
+    [Test]
+    public void When_FindControl_NoMatch_Then_ReturnsNull()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+
+        var result = sut.FindControl(c => c.AbsoluteDataJsonPath == "nonExistentField");
+
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public void When_FindControls_Then_ReturnsAllMatching()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+
+        var results = sut.FindControls(_ => true).ToList();
+
+        Assert.That(results.Count, Is.EqualTo(2));
+        Assert.That(results.Any(c => c.AbsoluteDataJsonPath == "$.firstName"), Is.True);
+        Assert.That(results.Any(c => c.AbsoluteDataJsonPath == "$.surname"), Is.True);
+    }
+
+    // ── OnControlValueChanged ───────────────────────────────────────────────
+
+    [Test]
+    public async Task When_NotifyControlValueChanged_And_HandlerRegistered_Then_HandlerIsCalled()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+
+        FormControlContext? capturedControl = null;
+        initOptions.OnControlValueChanged += (control, _) =>
+        {
+            capturedControl = control;
+            return Task.CompletedTask;
+        };
+
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        await sut.NotifyControlValueChanged(firstNameContext.Id);
+
+        Assert.That(capturedControl, Is.Not.Null);
+        Assert.That(capturedControl!.Id, Is.EqualTo(firstNameContext.Id));
+    }
+
+    [Test]
+    public async Task When_NotifyControlValueChanged_And_MultipleHandlers_Then_AllAreCalled()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+
+        var callCount = 0;
+        initOptions.OnControlValueChanged += (_, _) => { callCount++; return Task.CompletedTask; };
+        initOptions.OnControlValueChanged += (_, _) => { callCount++; return Task.CompletedTask; };
+
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        await sut.NotifyControlValueChanged(firstNameContext.Id);
+
+        Assert.That(callCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task When_NotifyControlValueChanged_And_NoHandlerRegistered_Then_DoesNotThrow()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        Assert.DoesNotThrowAsync(() => sut.NotifyControlValueChanged(firstNameContext.Id));
+    }
+
+    [Test]
+    public async Task When_NotifyControlInputChanged_And_HandlerRegistered_Then_HandlerIsCalled()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+
+        FormControlContext? capturedControl = null;
+        initOptions.OnControlInputChanged += (control, _) =>
+        {
+            capturedControl = control;
+            return Task.CompletedTask;
+        };
+
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+
+        await sut.NotifyControlInputChanged(firstNameContext.Id);
+
+        Assert.That(capturedControl, Is.Not.Null);
+        Assert.That(capturedControl!.Id, Is.EqualTo(firstNameContext.Id));
+    }
+
+    [Test]
+    public async Task When_HandlerCallsUpdateValue_Via_FindControl_Then_ValueIsUpdated()
+    {
+        var initOptions = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+
+        initOptions.OnControlValueChanged += (control, form) =>
+        {
+            // Simulate: when firstName changes, write a derived value to surname
+            if (control.AbsoluteDataJsonPath == "$.firstName")
+            {
+                var surnameCtx = form.FindControl(c => c.AbsoluteDataJsonPath == "$.surname");
+                if (surnameCtx is not null)
+                    form.UpdateValue(surnameCtx.Id, JToken.FromObject("auto-filled"));
+            }
+            return Task.CompletedTask;
+        };
+
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+        var page = sut.GetPage(0);
+        var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
+        var firstNameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "firstName");
+        var surnameContext = verticalLayout.Rows.First(x => x.Interpretation.Label?.Label == "surname");
+
+        sut.UpdateValue(firstNameContext.Id, JToken.FromObject("John"));
+        await sut.NotifyControlValueChanged(firstNameContext.Id);
+
+        var surnameValue = sut.GetValue(surnameContext.Id);
+        Assert.That($"{surnameValue}", Is.EqualTo("auto-filled"));
+    }
 }

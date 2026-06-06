@@ -61,4 +61,27 @@ public interface IJsonFormContext
     void ChangeDisabled(bool disabled);
 
     void ChangeReadOnly(bool readOnly);
+
+    /// <summary>
+    /// Returns the first control context that matches the predicate, or null if none match.
+    /// Useful for locating a target context before calling <see cref="UpdateValue"/>.
+    /// </summary>
+    FormControlContext? FindControl(Func<FormControlContext, bool> predicate);
+
+    /// <summary>
+    /// Returns all control contexts that match the predicate.
+    /// </summary>
+    IEnumerable<FormControlContext> FindControls(Func<FormControlContext, bool> predicate);
+
+    /// <summary>
+    /// Called by the form engine after a control's committed value changes.
+    /// Fires any <see cref="JsonFormContextInitOptions.OnControlValueChanged"/> subscribers.
+    /// </summary>
+    Task NotifyControlValueChanged(Guid controlContextId);
+
+    /// <summary>
+    /// Called by the form engine after a control receives a raw input event.
+    /// Fires any <see cref="JsonFormContextInitOptions.OnControlInputChanged"/> subscribers.
+    /// </summary>
+    Task NotifyControlInputChanged(Guid controlContextId);
 }

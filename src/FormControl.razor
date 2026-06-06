@@ -154,6 +154,11 @@
             new Action<TValue>(OnValueChanged)
         );
 
+        result[ComponentInstanceParameterKeys.OnInputChanged] = new EventCallback<TValue>(
+            this,
+            new Action<TValue>(OnInputChanged)
+        );
+
         return result;
     }
 
@@ -220,6 +225,22 @@
             controlInstance.ErrorHelperText = null;
         }
 
-        InvokeAsync(StateHasChanged);
+        InvokeAsync(async () =>
+        {
+            if (FormContext is not null)
+                await FormContext.NotifyControlValueChanged(ControlContext!.Id);
+            StateHasChanged();
+        });
+    }
+
+    private void OnInputChanged<TValue>(TValue value)
+    {
+        // Raw input — does not update form data or clear errors.
+        // Just fires the subscriber event so callers can react to keystrokes.
+        InvokeAsync(async () =>
+        {
+            if (FormContext is not null)
+                await FormContext.NotifyControlInputChanged(ControlContext!.Id);
+        });
     }
 }

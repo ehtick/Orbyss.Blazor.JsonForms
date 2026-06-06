@@ -29,15 +29,15 @@
 
 		<PackageReleaseNotes>
 			*Release: 6 June, 2026*
-			- Added "helperIconLabel" as a known custom option on Control elements. The value is resolved through the translation context
-			(i18n key first, literal string fallback) and exposed as HelperIconText on InputFormComponentInstanceBase, keeping it
-			in sync with language changes automatically.
-			- Added "cssClass" as a known custom option on Control elements. The schema-defined class is merged with any
-			programmatically assigned class (programmatic first, schema last) and applied once on initialisation.
-			- Bug fix: hidden control contexts no longer null out their bound data path when another displayed control context
-			points to the same path. A context is now only truly hidden if no other visible context shares its data path.
-
-</PackageReleaseNotes>
+			- Added OnControlValueChanged and OnControlInputChanged events to JsonFormContextInitOptions. Handlers receive the
+			FormControlContext and IJsonFormContext, support multiple subscribers via +=, and fire after every committed value
+			change or raw input event respectively.
+			- Added FindControl and FindControls to IJsonFormContext for predicate-based context lookup across the full element tree.
+			- Added NotifyControlValueChanged and NotifyControlInputChanged to IJsonFormContext, called automatically by the form
+			engine after each value or input event.
+			- Added OnInputChanged parameter key to ComponentInstanceParameterKeys. Components that declare an OnInputChanged
+			parameter receive raw input callbacks; those that do not have it stripped automatically.
+		</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

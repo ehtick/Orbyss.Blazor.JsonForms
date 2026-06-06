@@ -22,6 +22,7 @@ public sealed class JsonFormContext(
     private FormPageContext[] pages = [];
     private string? activeLanguage;
     private JObject options = [];
+    private JsonFormContextInitOptions? initOptions;
 
     private bool disabled;
     private bool readOnly;
@@ -41,24 +42,26 @@ public sealed class JsonFormContext(
 
     public bool ReadOnly => readOnly;
 
-    public void Instantiate(JsonFormContextInitOptions initOptions)
+    public void Instantiate(JsonFormContextInitOptions initOpts)
     {
         if (pages.Length > 0)
         {
             throw new InvalidOperationException("Context is already instantiated");
         }
 
-        var data = initOptions.Data ?? new JObject();
-        var dataSchema = initOptions.DataSchema;
-        var translationSchema = initOptions.TranslationSchema;
-        var uiSchema = initOptions.UiSchema;
+        initOptions = initOpts;
+
+        var data = initOpts.Data ?? new JObject();
+        var dataSchema = initOpts.DataSchema;
+        var translationSchema = initOpts.TranslationSchema;
+        var uiSchema = initOpts.UiSchema;
 
         dataContext.Instantiate(data, dataSchema);
         translationContext.Instantiate(translationSchema, dataSchema);
 
-        disabled = initOptions.Disabled;
-        activeLanguage = initOptions.Language;
-        readOnly = initOptions.ReadOnly;
+        disabled = initOpts.Disabled;
+        activeLanguage = initOpts.Language;
+        readOnly = initOpts.ReadOnly;
 
         var uiSchemaInterpretation = uiSchemaInterpreter.Interpret(uiSchema, dataSchema);
         options = uiSchema.Options?.ToJToken() as JObject ?? [];
@@ -341,6 +344,38 @@ public sealed class JsonFormContext(
         }
 
         return [.. result];
+    }
+
+    public FormControlContext? FindControl(Func<FormControlContext, bool> predicate)
+    {
+        return pages
+            .SelectMany(p => p.FindContexts(_ => true))
+            .OfType<FormControlContext>()
+            .FirstOrDefault(predicate);
+    }
+
+    public IEnumerable<FormControlContext> FindControls(Func<FormControlContext, bool> predicate)
+    {
+        return pages
+            .SelectMany(p => p.FindContexts(_ => true))
+            .OfType<FormControlContext>()
+            .Where(predicate);
+    }
+
+    public async Task NotifyControlValueChanged(Guid controlContextId)
+    {
+        if (initOptions is null) return;
+        var match = FindContextById(controlContextId);
+        if (match is FormControlContext control)
+            await initOptions.InvokeControlValueChanged(control, this);
+    }
+
+    public async Task NotifyControlInputChanged(Guid controlContextId)
+    {
+        if (initOptions is null) return;
+        var match = FindContextById(controlContextId);
+        if (match is FormControlContext control)
+            await initOptions.InvokeControlInputChanged(control, this);
     }
 
     private IFormElementContext FindContextById(Guid id)
