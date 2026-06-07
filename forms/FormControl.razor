@@ -56,7 +56,8 @@
     {
         controlInstance
             .SetLabel(FormContext!.GetLabel(ControlContext!.Id))
-            .SetHelperIconText(FormContext!.GetHelperIconText(ControlContext!.Id));
+            .SetHelperIconText(FormContext!.GetHelperIconText(ControlContext!.Id))
+            .SetErrorHelperText(FormContext!.GetDataContextError(ControlContext!.Id));
 
         var schemaHelperText = FormContext!.GetHelperText(ControlContext!.Id);
         if (schemaHelperText is not null)

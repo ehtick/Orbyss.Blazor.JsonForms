@@ -181,31 +181,90 @@ custom-components skill covers applying your own theme the standard way.
 
 ---
 
-## 🛠 Bring your own UI — in three rules
+## 🛠 Bring your own UI
 
-1. **Input components implement `IFormComponent`** — inherit
-   `FormInputComponentBase<TValue>` to get it (and all standard parameters) free.
-2. **Declare `Value` and invoke `OnValueChanged`** on commit — that's how state
-   flows back into the form.
-3. **Don't touch engine-owned parameters** (`Value`/`ValueChanged`/…) — the engine
-   wires binding automatically.
+The engine is completely UI-agnostic. Plugging in your own component library takes
+two things: **components** and **factories**.
+
+### Components — three rules
+
+1. **Inherit `FormInputComponentBase<TValue>`** — you get `IFormComponent` and all
+   standard engine parameters (`Value`, `Disabled`, `ReadOnly`, `Class`,
+   `ErrorHelperText`, `Label`, …) for free.
+2. **Invoke `OnValueChanged`** on commit — that's how state flows back into the form.
+3. **Don't declare engine-owned parameters** (`Value`, `ValueChanged`, `Checked`, …)
+   — the engine wires them automatically.
 
 ```razor
+@* MyTextBox.razor *@
 @inherits FormInputComponentBase<string?>
+
 <input value="@Value" class="@Class" disabled="@(Disabled || ReadOnly)"
        @onchange="e => OnValueChanged.InvokeAsync(e.Value?.ToString())" />
+
+@if (!string.IsNullOrWhiteSpace(ErrorHelperText)) { <div class="err">@ErrorHelperText</div> }
 ```
 
-Component registration is **per form**: factories are transient, and a single form
-can override a slot, add parameters, or register an alias via
-`<JsonForm ConfigureFactories="…">` — layered on top of the application defaults,
-without affecting other forms.
+### Factories — assign your components to slots
 
-The [custom-components skill](./skills/orbyss-jsonforms-custom-components) has full,
-dependency-free recipes for every slot (inputs, dropdowns, dates, sliders, buttons,
-stepper navigation, list, action button, and an array layout with inline **and**
-dialog editing), plus the factory model, the three-layer parameter precedence,
-per-form configuration, and theming.
+Implement one factory class per slot by extending the matching base class and
+assigning component types in the constructor:
+
+```csharp
+public class MyControlFactory : ControlComponentFactory
+{
+    public MyControlFactory()
+    {
+        TextInputComponentType    = typeof(MyTextBox);
+        NumberInputComponentType  = typeof(MyNumberInput);
+        IntegerInputComponentType = typeof(MyIntegerInput);
+        BooleanInputComponentType = typeof(MyCheckbox);
+        DropdownComponentType     = typeof(MyDropdown);
+        MultiSelectComponentType  = typeof(MyMultiSelect);
+        DateOnlyInputComponentType = typeof(MyDatePicker);
+
+        RegisterAlias("toggle", typeof(MyToggle));   // custom variant via options.component
+    }
+}
+```
+
+Register the factories as **transient** (one set per `<JsonForm>` instance):
+
+```csharp
+services.AddTransient<IControlComponentFactory>(_ => new MyControlFactory());
+services.AddTransient<IButtonComponentFactory>(_ => new MyButtonFactory());
+services.AddTransient<INavigationComponentFactory>(_ => new MyNavigationFactory());
+services.AddTransient<IListComponentFactory>(_ => new MyListFactory());
+services.AddTransient<IActionButtonComponentFactory>(_ => new MyActionButtonFactory());
+services.AddTransient<IArrayLayoutComponentFactory>(_ => new MyArrayLayoutFactory());
+services.AddJsonForms();
+```
+
+Wrap all of that in a single extension method (e.g. `AddMyJsonForms()`) and you
+have a complete, self-contained UI integration package.
+
+### Per-form factory configuration
+
+Because factories are transient, you can override any slot or parameter for a
+single form without touching the application defaults:
+
+```razor
+<JsonForm InitOptions="@options" OnSubmit="HandleSubmit"
+          ConfigureFactories="@(f => f.ConfigureControls = c =>
+              c.BooleanInputComponentType = typeof(MySwitch))" />
+```
+
+### Reference implementation
+
+[`Orbyss.Blazor.Syncfusion.JsonForms`](https://github.com/orbyss-io/Orbyss.Blazor.Syncfusion.JsonForms)
+is a complete, production-ready example of exactly this pattern — six factory
+classes, a `AddSyncfusionJsonForms()` extension, default translations, and a
+stylesheet. Use it as a blueprint.
+
+The [custom-components skill](./skills/orbyss-jsonforms-custom-components) has full
+recipes for every slot (inputs, dropdowns, dates, sliders, buttons, stepper
+navigation, list-with-detail, action button, and array layout with inline **and**
+dialog editing), plus the three-layer parameter-precedence rules and theming.
 
 ---
 
@@ -244,7 +303,7 @@ MIT License — © Orbyss. See [LICENSE](./forms/LICENSE).
 - 🌍 Website: [https://orbyss.io](https://orbyss.io)
 - 📦 NuGet: [Orbyss.Blazor.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.JsonForms) · [Orbyss.Blazor.JsonForms.Core](https://www.nuget.org/packages/Orbyss.Blazor.JsonForms.Core)
 - 🧑‍💻 GitHub: [orbyss-io/Orbyss.Blazor.JsonForms](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms)
-- 🔌 UI integrations: [Syncfusion](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms) · [MudBlazor](https://www.nuget.org/packages/Orbyss.Blazor.MudBlazor.JsonForms)
+- 🔌 UI integration: [Syncfusion](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms) · [Syncfusion source](https://github.com/orbyss-io/Orbyss.Blazor.Syncfusion.JsonForms)
 - 📐 Standard: [JsonForms.io](https://jsonforms.io/)
 
 ## 🤝 Contributing

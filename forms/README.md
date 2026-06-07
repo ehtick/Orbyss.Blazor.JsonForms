@@ -30,12 +30,11 @@ This package is the **engine**. For building a UI layer against contracts only,
 reference [`Orbyss.Blazor.JsonForms.Core`](https://www.nuget.org/packages/Orbyss.Blazor.JsonForms.Core).
 Targets **net8.0** and **net10.0**.
 
-### Ready-made UI integrations
+### Ready-made UI integration
 
-- 🧩 [Orbyss.Blazor.Syncfusion.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms)
-- 🎨 [Orbyss.Blazor.MudBlazor.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.MudBlazor.JsonForms)
+- 🧩 [Orbyss.Blazor.Syncfusion.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms) — full Syncfusion Blazor renderer, one `AddSyncfusionJsonForms()` call.
 
-Or build your own — see [Bring your own UI](#bring-your-own-ui).
+Or **roll your own** — see [Bring your own UI](#bring-your-own-ui).
 
 ---
 
@@ -233,15 +232,17 @@ with `"cssClass": "!x"`. Full catalogue:
 
 ## Bring your own UI
 
-The UI layer maps each resolved element to a Blazor component via factory slots.
-Three rules cover most of it:
+The engine is completely UI-agnostic. Plugging in your own component library takes
+two things: **components** and **factories**.
 
-1. **Input components implement `IFormComponent`** — inherit
-   `FormInputComponentBase<TValue>` to get it (and all standard parameters) free.
-2. **Declare `Value` and invoke `OnValueChanged`** on commit — that's how state
-   flows back.
-3. **Don't set engine-owned parameters** (`Value`, `ValueChanged`, `Checked`,
-   `CheckedChanged`, `Values`, `ValuesChanged`) — binding is wired automatically.
+### Components — three rules
+
+1. **Inherit `FormInputComponentBase<TValue>`** — you get `IFormComponent` and all
+   standard engine parameters (`Value`, `Disabled`, `ReadOnly`, `Class`,
+   `ErrorHelperText`, `Label`, …) for free.
+2. **Invoke `OnValueChanged`** on commit — that's how state flows back into the form.
+3. **Don't declare engine-owned parameters** (`Value`, `ValueChanged`, `Checked`, …)
+   — the engine wires them automatically.
 
 ```razor
 @* MyTextBox.razor *@
@@ -253,13 +254,64 @@ Three rules cover most of it:
 @if (!string.IsNullOrWhiteSpace(ErrorHelperText)) { <div class="err">@ErrorHelperText</div> }
 ```
 
-Parameters flow in three layers (engine auto-wire → factory `SetParameter` →
-UI-schema `parameters`), then undeclared parameters are stripped. Factories are
-**transient** (one set per form), so a single form can override slots/parameters/
-aliases via `<JsonForm ConfigureFactories="…">` without affecting other forms. The
-complete contract — auto-wired parameters per slot, custom `JToken` conversion,
-aliases, per-form configuration, multi-page navigation, lists, and arrays — is in
-the [custom-components skill](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-custom-components).
+### Factories — assign your components to slots
+
+Extend the factory base classes and assign component types in the constructor:
+
+```csharp
+public class MyControlFactory : ControlComponentFactory
+{
+    public MyControlFactory()
+    {
+        TextInputComponentType    = typeof(MyTextBox);
+        NumberInputComponentType  = typeof(MyNumberInput);
+        IntegerInputComponentType = typeof(MyIntegerInput);
+        BooleanInputComponentType = typeof(MyCheckbox);
+        DropdownComponentType     = typeof(MyDropdown);
+        MultiSelectComponentType  = typeof(MyMultiSelect);
+        DateOnlyInputComponentType = typeof(MyDatePicker);
+
+        RegisterAlias("toggle", typeof(MyToggle));   // custom variant via options.component
+    }
+}
+```
+
+Register all factories as **transient**, then call `AddJsonForms()`:
+
+```csharp
+services.AddTransient<IControlComponentFactory>(_ => new MyControlFactory());
+services.AddTransient<IButtonComponentFactory>(_ => new MyButtonFactory());
+services.AddTransient<INavigationComponentFactory>(_ => new MyNavigationFactory());
+services.AddTransient<IListComponentFactory>(_ => new MyListFactory());
+services.AddTransient<IActionButtonComponentFactory>(_ => new MyActionButtonFactory());
+services.AddTransient<IArrayLayoutComponentFactory>(_ => new MyArrayLayoutFactory());
+services.AddJsonForms();
+```
+
+Wrap it all in an `AddMyJsonForms()` extension method and you have a complete,
+self-contained UI integration package.
+
+### Per-form factory configuration
+
+Factories are transient — one set per `<JsonForm>` — so you can override any slot
+or parameter for a single form without touching the application defaults:
+
+```razor
+<JsonForm InitOptions="@options" OnSubmit="HandleSubmit"
+          ConfigureFactories="@(f => f.ConfigureControls = c =>
+              c.BooleanInputComponentType = typeof(MySwitch))" />
+```
+
+### Reference implementation
+
+[`Orbyss.Blazor.Syncfusion.JsonForms`](https://github.com/orbyss-io/Orbyss.Blazor.Syncfusion.JsonForms)
+is a complete, production-ready example of exactly this pattern — six factory
+classes, a `AddSyncfusionJsonForms()` extension, default translations, and a
+stylesheet. Use it as a blueprint.
+
+The complete contract — auto-wired parameters per slot, `JToken` conversion,
+aliases, multi-page navigation, lists, arrays, and theming — is in the
+[custom-components skill](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-custom-components).
 
 ---
 
@@ -272,5 +324,5 @@ MIT License — © Orbyss.
 - 🌍 [orbyss.io](https://orbyss.io)
 - 🧑‍💻 [GitHub](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms) · Skills: [schema authoring](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-schema-authoring) · [custom components](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-custom-components) · [v1→v2 migration](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-v1-migration)
 - 📦 [Core package](https://www.nuget.org/packages/Orbyss.Blazor.JsonForms.Core)
-- 🔌 [Syncfusion UI](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms) · [MudBlazor UI](https://www.nuget.org/packages/Orbyss.Blazor.MudBlazor.JsonForms)
+- 🔌 [Syncfusion UI](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms) · [Syncfusion source](https://github.com/orbyss-io/Orbyss.Blazor.Syncfusion.JsonForms)
 - 📐 [JsonForms.io](https://jsonforms.io/)

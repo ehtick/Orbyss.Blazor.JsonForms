@@ -72,30 +72,21 @@
             .SetParameter(FormComponentParameterKeys.HideSubmitButton, HideSubmitButton);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override Task OnParametersSetAsync()
     {
-        bool changed = false;
+        if (formContext is null)
+            return Task.CompletedTask;
 
-        if (!firstRender && !string.IsNullOrWhiteSpace(Language) && Language != formContext.ActiveLanguage)
-        {
+        if (!string.IsNullOrWhiteSpace(Language) && Language != formContext.ActiveLanguage)
             formContext.ChangeLanguage(Language!);
-            changed = true;
-        }
 
-        if (!firstRender && Disabled.HasValue && Disabled != formContext.Disabled)
-        {
+        if (Disabled.HasValue && Disabled != formContext.Disabled)
             formContext.ChangeDisabled(Disabled.Value);
-            changed = true;
-        }
 
-        if (!firstRender && ReadOnly.HasValue && ReadOnly != formContext.ReadOnly)
-        {
+        if (ReadOnly.HasValue && ReadOnly != formContext.ReadOnly)
             formContext.ChangeReadOnly(ReadOnly.Value);
-            changed = true;
-        }
 
-        if (changed)
-            await InvokeAsync(StateHasChanged);
+        return Task.CompletedTask;
     }
 
     private IFormComponentFactory ResolveFactory()

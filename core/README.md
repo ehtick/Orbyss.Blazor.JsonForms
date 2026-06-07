@@ -18,11 +18,10 @@ depends on stable contracts instead of the full engine.
 
 Reference `Orbyss.Blazor.JsonForms.Core` when you are **writing a UI layer** — a
 set of Blazor components plus the factories that map each resolved form element to
-your components. Examples that do exactly this:
+your components. Examples:
 
-- [`Orbyss.Blazor.Syncfusion.JsonForms`](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms)
-- [`Orbyss.Blazor.MudBlazor.JsonForms`](https://www.nuget.org/packages/Orbyss.Blazor.MudBlazor.JsonForms)
-- Your own component set (Radzen, Telerik, Fluent UI, or plain HTML/CSS — no third-party dependency required).
+- [`Orbyss.Blazor.Syncfusion.JsonForms`](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms) — the reference implementation ([source](https://github.com/orbyss-io/Orbyss.Blazor.Syncfusion.JsonForms))
+- Your own component set for Radzen, Telerik, Fluent UI, plain HTML/CSS, or anything else — no third-party dependency required.
 
 ```bash
 dotnet add package Orbyss.Blazor.JsonForms.Core

@@ -93,11 +93,7 @@
     private void OnLanguageChanged()
     {
         listInstance.SetTitle(FormContext!.GetLabel(List!.Id));
-
-        if (listInstance.Parameters.TryGetValue(FormComponentParameterKeys.Error, out var err)
-            && err is string s && s.Length > 0)
-            listInstance.SetError(FormContext.GetDataContextError(List!.Id));
-
+        listInstance.SetError(FormContext.GetDataContextError(List!.Id));
         InvokeAsync(StateHasChanged);
     }
 }
