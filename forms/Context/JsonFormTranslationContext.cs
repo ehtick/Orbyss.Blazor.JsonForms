@@ -69,6 +69,9 @@ public sealed class JsonFormTranslationContext(IJsonPathInterpreter jsonPathInte
         return TranslateLabel(language, controlInterpretation.Label, controlInterpretation.AbsoluteSchemaJsonPath);
     }
 
+    public IEnumerable<string> GetAvailableLanguages()
+        => translations.Select(t => t.Language);
+
     public IEnumerable<TranslatedEnumItem>? TranslateEnum(string? language, UiSchemaControlInterpretation controlInterpretation)
     {
         var translation = GetTranslationObject(language);
@@ -91,18 +94,18 @@ public sealed class JsonFormTranslationContext(IJsonPathInterpreter jsonPathInte
     private IEnumerable<TranslatedEnumItem>? GetDefaultTranslatedEnumItems(string absoluteSchemaJsonPath)
     {
         var enumSchemaSection = schema.SelectToken(absoluteSchemaJsonPath);
-        if (enumSchemaSection is null
-            || enumSchemaSection is not JObject enumSchemaObject
-            || !enumSchemaObject.ContainsKey("enum")
-            || enumSchemaObject["enum"] is not JArray enumArray)
-        {
+        if (enumSchemaSection is null || enumSchemaSection is not JObject enumSchemaObject)
             return null;
-        }
 
-        return enumArray.Select(x =>
-        {
-            return new TranslatedEnumItem($"{x}", $"{x}");
-        });
+        // Direct enum: { "type": "string", "enum": [...] }
+        if (enumSchemaObject.ContainsKey("enum") && enumSchemaObject["enum"] is JArray enumArray)
+            return enumArray.Select(x => new TranslatedEnumItem($"{x}", $"{x}"));
+
+        // Array-of-enum: { "type": "array", "items": { "enum": [...] } }
+        if (enumSchemaObject["items"] is JObject itemsObj && itemsObj["enum"] is JArray itemsEnumArray)
+            return itemsEnumArray.Select(x => new TranslatedEnumItem($"{x}", $"{x}"));
+
+        return null;
     }
 
     private string? TranslateLabel(string? language, UiSchemaLabelInterpretation? labelInterpretation, string? absoluteSchemaPath)

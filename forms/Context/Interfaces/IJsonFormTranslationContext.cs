@@ -18,4 +18,6 @@ public interface IJsonFormTranslationContext
     string? TranslateLabel(string? language, UiSchemaControlInterpretationBase controlInterpretation);
 
     IEnumerable<TranslatedEnumItem>? TranslateEnum(string? language, UiSchemaControlInterpretation controlInterpretation);
+
+    IEnumerable<string> GetAvailableLanguages();
 }

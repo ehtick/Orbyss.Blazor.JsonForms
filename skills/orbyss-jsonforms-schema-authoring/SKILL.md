@@ -246,10 +246,8 @@ The `detail` scopes are relative to the array item. `detail` is required.
         "firstName": { "label": "First Name", "error": { "minLength": "At least 2 characters" } },
         "role": {
           "label": "Role",
-          "enums": [
-            { "value": "admin", "label": "Administrator" },
-            { "value": "user",  "label": "Standard user" }
-          ]
+          "admin": "Administrator",
+          "user": "Standard user"
         },
         "addAddress": { "label": "Add address" },
         "firstName.helper": { "label": "Enter the legal first name." }
@@ -263,8 +261,9 @@ The `detail` scopes are relative to the array item. `detail` is required.
 - **Section key** = the field's property name (or schema path), **or** an explicit
   `label`/`i18n` key from the UI schema, **or** a free key referenced by an option
   (e.g. `firstName.helper`, `addAddress`).
-- `label` — display text. `error` — per-error-type messages. `enums` — display
-  labels for enum values (`{ value, label }`); omit to show raw values.
+- `label` — display text. `error` — per-error-type messages. Enum display labels
+  are direct string properties on the section, keyed by the enum value
+  (e.g. `"admin": "Administrator"`); omit to show raw values.
 - Nested objects mirror nested data via nested sections.
 - With no matching language/section, labels fall back to a humanised property name
   and errors to defaults — a form without translations still renders sensibly.

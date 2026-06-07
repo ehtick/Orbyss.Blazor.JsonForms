@@ -7,8 +7,8 @@
         {
             var itemInstance = ComponentFactory.CreateListItem(item);
             itemInstance.SetParameter(FormComponentParameterKeys.OnRemoveItemClicked, GetRemoveClickedEvent(item));
-            <DynamicComponentWithChildContent Type="itemInstance.ComponentType" Parameters="itemInstance.Parameters">
-                <FormElementSelector Context="@item" />
+            <DynamicComponentWithChildContent Type="itemInstance.ComponentType" Parameters="itemInstance.Parameters" @key="item.Id">
+                <FormElementSelector Context="@item" @key="item.Id" />
             </DynamicComponentWithChildContent>
         }
     </DynamicComponentWithChildContent>

@@ -109,7 +109,7 @@ resources
         └── <sectionKey>          property name | schema path | label/i18n key | free key
             ├── label             display text
             ├── error             { <errorKey>: "message", … }
-            ├── enums             [ { "value": "...", "label": "..." }, … ]
+            ├── <enumValue>       enum display label, e.g. "admin": "Administrator"
             └── <nestedSection>   mirrors nested object data
 ```
 
@@ -202,9 +202,11 @@ Translation Schema:
       "addresses":   { "label": "Addresses" },
       "firstName":   { "label": "First name", "error": { "required": "Required", "minLength": "Min 2 characters" } },
       "firstName.help": { "label": "Your legal first name." },
-      "role":        { "label": "Role", "enums": [
-                        { "value": "admin", "label": "Administrator" },
-                        { "value": "user",  "label": "User" } ] },
+      "role": {
+        "label": "Role",
+        "admin": "Administrator",
+        "user": "User"
+      },
       "companyName": { "label": "Company name" },
       "addAddress":  { "label": "Add address" },
       "street":      { "label": "Street" },

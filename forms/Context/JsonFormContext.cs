@@ -40,6 +40,9 @@ public sealed class JsonFormContext(
 
     public string? ActiveLanguage => activeLanguage;
 
+    public IEnumerable<string> GetAvailableLanguages()
+        => translationContext.GetAvailableLanguages();
+
     public IJsonFormNotification FormNotification => notificationHandler;
 
     public int PageCount => pages.Length;
@@ -102,7 +105,8 @@ public sealed class JsonFormContext(
 
     public JToken? GetValue(Guid controlContextId)
     {
-        var match = FindContextById(controlContextId);
+        var match = TryFindContextById(controlContextId);
+        if (match is null) return null;
         var controlContext = CastControl(match);
         return dataContext.GetValue(controlContext);
     }
@@ -133,7 +137,10 @@ public sealed class JsonFormContext(
 
     public string? GetDataContextError(Guid controlContextId)
     {
-        var match = FindContextById(controlContextId);
+        var match = TryFindContextById(controlContextId);
+        if (match is null)
+            return null;
+
         if (match is FormListContext list && list.Errors.Any())
         {
             return translationContext.TranslateErrors(ActiveLanguage, list.Errors, list.Interpretation);
@@ -312,7 +319,10 @@ public sealed class JsonFormContext(
                 && itemConfig is JObject itemConfigObj
                 && itemConfigObj.TryGetValue("helperText", StringComparison.OrdinalIgnoreCase, out var helperTextToken))
             {
-                return new TranslatedEnumItem(item.Label, item.Value, $"{helperTextToken}");
+                var literalValue = $"{helperTextToken}";
+                var labelInterpretation = new UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
+                var helperText = translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
+                return new TranslatedEnumItem(item.Label, item.Value, helperText);
             }
             return item;
         });
@@ -545,14 +555,19 @@ public sealed class JsonFormContext(
 
     private IFormElementContext FindContextById(Guid id)
     {
+        return TryFindContextById(id)
+            ?? throw new InvalidOperationException($"Could not find context by id '{id}'");
+    }
+
+    private IFormElementContext? TryFindContextById(Guid id)
+    {
         foreach (var page in pages)
         {
             var result = page.FindContextById(id);
             if (result is not null)
                 return result;
         }
-
-        throw new InvalidOperationException($"Could not find context by id '{id}'");
+        return null;
     }
 
     private static Core.UiSchema.FormUiSchema ToRootUiSchema(Core.UiSchema.FormUiSchemaElement element)

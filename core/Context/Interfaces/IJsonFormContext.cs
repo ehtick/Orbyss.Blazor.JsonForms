@@ -10,6 +10,8 @@ public interface IJsonFormContext
 
     string? ActiveLanguage { get; }
 
+    IEnumerable<string> GetAvailableLanguages();
+
     IJsonFormNotification FormNotification { get; }
 
     int PageCount { get; }

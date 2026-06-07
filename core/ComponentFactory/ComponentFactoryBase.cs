@@ -129,12 +129,33 @@ public abstract class ComponentFactoryBase
                 continue;
             }
 
-            var dotnetValue = Convert.ChangeType(
-                jsonValue.ToDotnetValue(),
-                parameterProperty.PropertyType
-            );
+            var dotnetValue = ConvertUiSchemaParameterValue(jsonValue, parameterProperty.PropertyType);
             instance.Parameters[key] = dotnetValue;
         }
+    }
+
+    private static object? ConvertUiSchemaParameterValue(JValue jsonValue, Type targetType)
+    {
+        var value = jsonValue.ToDotnetValue();
+
+        if (value is null)
+        {
+            return null;
+        }
+
+        var conversionType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        if (conversionType.IsEnum)
+        {
+            if (value is string text)
+            {
+                return Enum.Parse(conversionType, text, ignoreCase: true);
+            }
+
+            return Enum.ToObject(conversionType, value);
+        }
+
+        return Convert.ChangeType(value, conversionType);
     }
 
     // ── Guard ─────────────────────────────────────────────────────────────────
