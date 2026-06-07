@@ -6,7 +6,7 @@ namespace Orbyss.Blazor.JsonForms.Core.ComponentBases;
 
 /// <summary>
 /// Abstract base class for action button components (buttons that fire a named action
-/// registered on <c>JsonFormContextOptions.RegisterAction</c>).
+/// registered on <c>JsonFormOptions.RegisterAction</c>).
 ///
 /// <para>
 /// Inherit to get standard parameters pre-declared: <c>Label</c>, <c>Disabled</c>,

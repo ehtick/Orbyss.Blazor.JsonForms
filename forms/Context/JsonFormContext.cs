@@ -8,6 +8,7 @@ using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
 using Orbyss.Blazor.JsonForms.Core.Context.Notifications;
 using Orbyss.Blazor.JsonForms.Core.Interpretation;
 using Orbyss.Blazor.JsonForms.Core.Models;
+using Orbyss.Blazor.JsonForms.Core;
 
 
 namespace Orbyss.Blazor.JsonForms.Context;
@@ -25,7 +26,7 @@ public sealed class JsonFormContext(
     private FormPageContext[] pages = [];
     private string? activeLanguage;
     private JObject options = [];
-    private JsonFormContextOptions? initOptions;
+    private JsonFormOptions? initOptions;
 
     private bool disabled;
     private bool readOnly;
@@ -45,7 +46,7 @@ public sealed class JsonFormContext(
 
     public bool ReadOnly => readOnly;
 
-    public void Instantiate(JsonFormContextOptions initOpts)
+    public void Instantiate(JsonFormOptions initOpts)
     {
         if (pages.Length > 0)
         {

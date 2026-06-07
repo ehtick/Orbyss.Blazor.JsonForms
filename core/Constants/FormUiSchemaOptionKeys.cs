@@ -51,7 +51,7 @@ public static class FormUiSchemaOptionKeys
 
     /// <summary>
     /// Key identifying the registered action handler for an <c>ActionButton</c> element.
-    /// Must match a key passed to <c>JsonFormContextOptions.RegisterAction</c>.
+    /// Must match a key passed to <c>JsonFormOptions.RegisterAction</c>.
     /// Example: "actionKey": "calculate-premium"
     /// </summary>
     public const string ActionKey = "actionKey";

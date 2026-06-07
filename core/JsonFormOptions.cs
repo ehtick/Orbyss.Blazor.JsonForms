@@ -1,11 +1,16 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
+using Orbyss.Blazor.JsonForms.Core.ComponentFactory;
+
+
+
 using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
 using Orbyss.Blazor.JsonForms.Core.Models;
 using Orbyss.Blazor.JsonForms.Core.UiSchema;
 using Orbyss.Blazor.JsonForms.Core.Utils;
 
-namespace Orbyss.Blazor.JsonForms.Core.Context.Models;
+namespace Orbyss.Blazor.JsonForms.Core;
 
 /// <summary>
 /// Handler delegate invoked when a control's committed value changes or when raw input changes.
@@ -41,16 +46,16 @@ public delegate Task ArrayItemMovedHandler(FormArrayContext arrayContext, int fr
 /// </summary>
 public delegate Task ArrayItemUpdatedHandler(FormArrayContext arrayContext, int updatedIndex, IJsonFormContext form);
 
-public sealed class JsonFormContextOptions
+public sealed class JsonFormOptions
 {
-    public JsonFormContextOptions(JSchema dataSchema, FormUiSchema uiSchema, TranslationSchema translationSchema)
+    public JsonFormOptions(JSchema dataSchema, FormUiSchema uiSchema, TranslationSchema translationSchema)
     {
         DataSchema = dataSchema;
         UiSchema = uiSchema;
         TranslationSchema = translationSchema;
     }
 
-    public JsonFormContextOptions(string dataSchemaJson, string uiSchemaJson, string translationSchemaJson)
+    public JsonFormOptions(string dataSchemaJson, string uiSchemaJson, string translationSchemaJson)
     {
         DataSchema = JSchema.Parse(dataSchemaJson);
         UiSchema = DefaultJsonConverter.Deserialize<FormUiSchema>(uiSchemaJson);
@@ -64,6 +69,14 @@ public sealed class JsonFormContextOptions
     public string? Language { get; init; }
     public bool Disabled { get; init; }
     public bool ReadOnly { get; init; }
+
+    /// <summary>
+    /// Per-form factory configuration. Runs on this form's own (transient) sub-factory instances,
+    /// on top of the application defaults set in <c>AddJsonForms</c>, so a single form can override a
+    /// component type, register an alias, or add parameters without affecting other forms.
+    /// Ignored when <see cref="ComponentFactory"/> is supplied (that is full manual control).
+    /// </summary>    
+    public Action<FormComponentFactoryOptions>? ConfigureFactories { get; set; }
 
     /// <summary>
     /// Fired when a control's committed value changes (e.g. on blur, selection, or toggle).

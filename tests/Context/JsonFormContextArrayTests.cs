@@ -3,6 +3,7 @@ using Orbyss.Blazor.JsonForms.Context.Interfaces;
 using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
 using Orbyss.Blazor.JsonForms.Core.Context.Models;
 using Orbyss.Blazor.JsonForms.Context.Utils;
+using Orbyss.Blazor.JsonForms.Core;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
 
@@ -79,7 +80,7 @@ public sealed class JsonFormContextArrayTests
         string? uiSchema = null,
         JObject? data = null)
     {
-        var opts = new JsonFormContextOptions(ArraySchema, uiSchema ?? ArrayUiSchema, TranslationSchema)
+        var opts = new JsonFormOptions(ArraySchema, uiSchema ?? ArrayUiSchema, TranslationSchema)
         {
             Data = data,
             Language = "en"
@@ -317,7 +318,7 @@ public sealed class JsonFormContextArrayTests
     [Test]
     public async Task When_AddArrayItem_And_HandlerRegistered_Then_HandlerIsCalledWithCorrectIndex()
     {
-        var opts = new JsonFormContextOptions(ArraySchema, ArrayUiSchema, TranslationSchema);
+        var opts = new JsonFormOptions(ArraySchema, ArrayUiSchema, TranslationSchema);
 
         FormArrayContext? capturedArray = null;
         int capturedIndex = -1;
@@ -346,7 +347,7 @@ public sealed class JsonFormContextArrayTests
     [Test]
     public async Task When_RemoveArrayItem_And_HandlerRegistered_Then_HandlerIsCalledWithRemovedIndex()
     {
-        var opts = new JsonFormContextOptions(ArraySchema, ArrayUiSchema, TranslationSchema);
+        var opts = new JsonFormOptions(ArraySchema, ArrayUiSchema, TranslationSchema);
 
         int capturedIndex = -1;
         opts.OnArrayItemRemoved += (_, index, _) =>
@@ -381,7 +382,7 @@ public sealed class JsonFormContextArrayTests
                 ]
             }
             """);
-        var opts = new JsonFormContextOptions(ArraySchema, ArrayUiSchema, TranslationSchema) { Data = data };
+        var opts = new JsonFormOptions(ArraySchema, ArrayUiSchema, TranslationSchema) { Data = data };
 
         int capturedFrom = -1;
         int capturedTo = -1;
@@ -523,7 +524,7 @@ public sealed class JsonFormContextArrayTests
                 ]
             }
             """);
-        var opts = new JsonFormContextOptions(ArraySchema, ArrayUiSchema, TranslationSchema) { Data = data };
+        var opts = new JsonFormOptions(ArraySchema, ArrayUiSchema, TranslationSchema) { Data = data };
 
         int capturedIndex = -1;
         opts.OnArrayItemUpdated += (_, index, _) =>

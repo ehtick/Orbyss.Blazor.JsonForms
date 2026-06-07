@@ -18,7 +18,7 @@ public interface IJsonFormContext
 
     bool ReadOnly { get; }
 
-    void Instantiate(JsonFormContextOptions initOptions);
+    void Instantiate(JsonFormOptions initOptions);
 
     JToken? GetFormOption(string key);
 

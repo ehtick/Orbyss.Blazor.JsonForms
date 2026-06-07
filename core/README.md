@@ -41,7 +41,7 @@ Everything lives under the `Orbyss.Blazor.JsonForms.Core.*` namespace:
 | `…Core.ComponentFactory` | `IFormComponentFactory` + the six per-slot sub-factories (`IControlComponentFactory`, `IButtonComponentFactory`, `INavigationComponentFactory`, `IListComponentFactory`, `IActionButtonComponentFactory`, `IArrayLayoutComponentFactory`), `IComponentInstance`, `IFormComponent`, default factory implementations. |
 | `…Core.ComponentBases` | Abstract Blazor base classes to inherit from: `FormInputComponentBase<TValue>`, `FormButtonComponentBase`, `FormActionButtonComponentBase`, `FormNavigationComponentBase`, `FormListComponentBase`, `FormListItemComponentBase`, `FormArrayLayoutComponentBase`. |
 | `…Core.Context.Interfaces` | `IJsonFormContext` (the live form) and friends. |
-| `…Core.Context.Models` | Element contexts (`FormControlContext`, `FormArrayContext`, …) and `JsonFormContextOptions`. |
+| `…Core.Context.Models` | Element contexts (`FormControlContext`, `FormArrayContext`, …) and `JsonFormOptions`. |
 | `…Core.Interpretation` | `ControlType` and the interpretation models. |
 | `…Core.UiSchema` | `FormUiSchema` records and the rule/element enums. |
 | `…Core.Constants` | `FormComponentParameterKeys`, `FormUiSchemaOptionKeys`, `FormCssClasses`, `FormCssVariables`, `FormCulture`, `ControlTypeLookup`. |

@@ -5,7 +5,7 @@ namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory.SubFactories;
 
 /// <summary>
 /// Creates component instances for action buttons (buttons that fire a named action
-/// registered via <c>JsonFormContextOptions.RegisterAction</c>).
+/// registered via <c>JsonFormOptions.RegisterAction</c>).
 ///
 /// <para>
 /// Implement this interface — instead of the full <see cref="IFormComponentFactory"/> — when you

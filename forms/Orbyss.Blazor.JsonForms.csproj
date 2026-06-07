@@ -95,18 +95,18 @@
 				- Added GetArrayLayout to IFormComponentInstanceProvider.
 				- Added array-related CSS classes to FormCssClasses (Array, ArrayItem, ArrayItemControls,
 				  ArrayItemActions, ArrayAddRow, ArrayItemDragOver) with matching rules in orbyss-forms.css.
-				- Added three named delegate types on JsonFormContextOptions for array lifecycle hooks:
+				- Added three named delegate types on JsonFormOptions for array lifecycle hooks:
 				  ArrayItemAddedHandler(arrayContext, addedIndex, form),
 				  ArrayItemRemovedHandler(arrayContext, removedIndex, form), and
 				  ArrayItemMovedHandler(arrayContext, fromIndex, toIndex, form).
 				  Named parameters make handler signatures self-documenting, especially for Move where
 				  fromIndex/toIndex would otherwise be ambiguous plain integers.
 				- Added OnArrayItemAdded, OnArrayItemRemoved, OnArrayItemMoved multi-subscriber events
-				  to JsonFormContextOptions. Handlers fire after the mutation and rule re-evaluation,
+				  to JsonFormOptions. Handlers fire after the mutation and rule re-evaluation,
 				  using the same += pattern as OnControlValueChanged.
 				- Added NotifyArrayItemAdded, NotifyArrayItemRemoved, NotifyArrayItemMoved to
 				  IJsonFormContext for callers that need to fire the events manually.
-				- Renamed JsonFormContextInitOptions to JsonFormContextOptions (removed "Init" from the
+				- Renamed JsonFormContextInitOptions to JsonFormOptions (removed "Init" from the
 				  name). The class, constructor, and all references in the engine have been updated.
 				- Fixed a pre-existing bug in FormRuleEnforcer.SetHiddenForElement where the method
 				  incorrectly called SetDisabled instead of SetHidden at its entry point, causing hidden

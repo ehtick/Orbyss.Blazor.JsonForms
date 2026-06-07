@@ -1,7 +1,7 @@
 ﻿using Orbyss.Blazor.JsonForms.Context.Interfaces;
 using Orbyss.Blazor.JsonForms.Context.Notifications;
+using Orbyss.Blazor.JsonForms.Core;
 using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Core.Context.Models;
 using Orbyss.Blazor.JsonForms.Core.Context.Notifications;
 using Orbyss.Blazor.JsonForms.Core.Interpretation;
 using Orbyss.Blazor.JsonForms.Core.Interpretation.Interfaces;
@@ -14,7 +14,7 @@ namespace Orbyss.Blazor.JsonForms.Context.Utils;
 public static class JsonFormContextBuilder
 {
     public static IJsonFormContext BuildAndInstantiate(
-        JsonFormContextOptions options,
+        JsonFormOptions options,
         IJsonFormDataContext? dataContext = null,
         IJsonFormTranslationContext? translationContext = null,
         IJsonFormNotificationHandler? notificationHandler = null,

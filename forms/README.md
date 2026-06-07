@@ -80,7 +80,7 @@ builder.Services.AddJsonForms(configureFactories: o =>
 <JsonForm InitOptions="@options" OnSubmit="HandleSubmit" />
 
 @code {
-    private JsonFormContextOptions options = new(
+    private JsonFormOptions options = new(
         jsonSchemaJson,
         uiSchemaJson,
         translationSchemaJson);
@@ -89,7 +89,7 @@ builder.Services.AddJsonForms(configureFactories: o =>
 }
 ```
 
-- `JsonFormContextOptions` accepts the three schemas as **strings** or parsed
+- `JsonFormOptions` accepts the three schemas as **strings** or parsed
   objects (`JSchema`, `FormUiSchema`, `TranslationSchema`), plus optional seed
   `Data`, initial `Language`, and `Disabled` / `ReadOnly`.
 - The form context resolves from a `FormContext` `[Parameter]`, a **transient**
@@ -179,7 +179,7 @@ first, then falls back to its literal string.
 Subscribe on the options object before passing it to `<JsonForm/>`:
 
 ```csharp
-var options = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+var options = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
 
 options.OnControlValueChanged += async (control, form) =>
 {

@@ -5,6 +5,7 @@ using Orbyss.Blazor.JsonForms.Context.Notifications;
 using Orbyss.Blazor.JsonForms.Core.Context.Notifications;
 using Orbyss.Blazor.JsonForms.Context.Utils;
 using Orbyss.Blazor.JsonForms.Core.Models;
+using Orbyss.Blazor.JsonForms.Core;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
 
@@ -33,7 +34,7 @@ public sealed class JsonFormContextTests
             ["firstName"] = "H"
         };
 
-        var initOptions = new JsonFormContextOptions(
+        var initOptions = new JsonFormOptions(
             jsonSchema,
             uiSchema,
             translationSchema
@@ -66,7 +67,7 @@ public sealed class JsonFormContextTests
     {
         // Arrange
         int assertionValue = 0;
-        var initOptions = new JsonFormContextOptions(
+        var initOptions = new JsonFormOptions(
             jsonSchema,
             uiSchema,
             translationSchema
@@ -89,7 +90,7 @@ public sealed class JsonFormContextTests
     {
         // Arrange
         int assertionValue = 0;
-        var initOptions = new JsonFormContextOptions(
+        var initOptions = new JsonFormOptions(
             jsonSchema,
             uiSchema,
             translationSchema
@@ -112,7 +113,7 @@ public sealed class JsonFormContextTests
     {
         // Arrange
         int assertionValue = 0;
-        var initOptions = new JsonFormContextOptions(
+        var initOptions = new JsonFormOptions(
             jsonSchema,
             uiSchema,
             translationSchema
@@ -135,7 +136,7 @@ public sealed class JsonFormContextTests
     {
         // Arrange
         int assertionValue = 0;
-        var initOptions = new JsonFormContextOptions(
+        var initOptions = new JsonFormOptions(
             jsonSchema,
             uiSchema,
             translationSchema
@@ -162,7 +163,7 @@ public sealed class JsonFormContextTests
             ["firstName"] = "Johannes"
         };
 
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema)
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema)
         {
             Data = formData
         };
@@ -183,7 +184,7 @@ public sealed class JsonFormContextTests
     {
         // Arrange
         var invalidId = Guid.NewGuid();
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
 
         // Act & Assert
@@ -198,7 +199,7 @@ public sealed class JsonFormContextTests
     public void When_GetValue_And_ContextIsNotControl_Then_ThrowsException()
     {
         // Arrange
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
 
         var page = sut.GetPage(0);
@@ -221,7 +222,7 @@ public sealed class JsonFormContextTests
             ["firstName"] = "H"
         };
 
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema)
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema)
         {
             Data = formData
         };
@@ -253,7 +254,7 @@ public sealed class JsonFormContextTests
             ["firstName"] = "H"
         };
 
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema)
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema)
         {
             Data = formData
         };
@@ -293,7 +294,7 @@ public sealed class JsonFormContextTests
             ["surname"] = surname
         };        
 
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema)
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema)
         {
             Data = formData
         };
@@ -326,7 +327,7 @@ public sealed class JsonFormContextTests
             ["firstName"] = "Johannes"
         };
 
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithDuplicateScope, translationSchema)
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchemaWithDuplicateScope, translationSchema)
         {
             Data = formData
         };
@@ -344,7 +345,7 @@ public sealed class JsonFormContextTests
     public void When_GetCssClass_And_OptionIsSet_Then_ReturnsOptionValue()
     {
         // Arrange
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithCssClass, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchemaWithCssClass, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -361,7 +362,7 @@ public sealed class JsonFormContextTests
     public void When_GetCssClass_And_OptionIsNotSet_Then_ReturnsNull()
     {
         // Arrange
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -378,7 +379,7 @@ public sealed class JsonFormContextTests
     public void When_GetHelperIconText_And_OptionValueIsI18nKey_Then_ReturnsTranslatedLabel()
     {
         // Arrange — "helperKey" resolves to "This is helpful info" via the en translation
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithHelperIconTextLabel, translationSchema)
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchemaWithHelperIconTextLabel, translationSchema)
         {
             Language = "en"
         };
@@ -398,7 +399,7 @@ public sealed class JsonFormContextTests
     public void When_GetHelperIconText_And_OptionValueIsLiteralString_Then_ReturnsLiteralValue()
     {
         // Arrange — "Literal helper text" has no matching i18n key, falls back to the literal value
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithHelperIconTextLabel, translationSchema)
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchemaWithHelperIconTextLabel, translationSchema)
         {
             Language = "en"
         };
@@ -418,7 +419,7 @@ public sealed class JsonFormContextTests
     public void When_GetHelperIconText_And_OptionIsNotSet_Then_ReturnsNull()
     {
         // Arrange
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -434,7 +435,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_GetHelperText_And_OptionValueIsI18nKey_Then_ReturnsTranslatedLabel()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithHelperText, translationSchema) { Language = "en" };
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchemaWithHelperText, translationSchema) { Language = "en" };
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -448,7 +449,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_GetHelperText_And_OptionValueIsLiteralString_Then_ReturnsLiteralValue()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithHelperText, translationSchema) { Language = "en" };
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchemaWithHelperText, translationSchema) { Language = "en" };
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -462,7 +463,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_GetHelperText_And_OptionIsNotSet_Then_ReturnsNull()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -476,7 +477,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_GetPrefixText_And_OptionIsSet_Then_ReturnsValue()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchemaWithMinMax, uiSchemaWithPrefixSuffix, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchemaWithMinMax, uiSchemaWithPrefixSuffix, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -490,7 +491,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_GetSuffixText_And_OptionIsSet_Then_ReturnsValue()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchemaWithMinMax, uiSchemaWithPrefixSuffix, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchemaWithMinMax, uiSchemaWithPrefixSuffix, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -504,7 +505,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_InterpretControl_And_SchemaHasMinMax_Then_InterpretationContainsMinMax()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchemaWithMinMax, uiSchemaSimpleAge, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchemaWithMinMax, uiSchemaSimpleAge, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -517,7 +518,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_GetTranslatedEnumItems_And_EnumItemOptionsSet_Then_ItemsHaveHelperText()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchemaWithEnum, uiSchemaWithEnumItemOptions, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchemaWithEnum, uiSchemaWithEnumItemOptions, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -535,7 +536,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_FindControl_ByDataPath_Then_ReturnsCorrectContext()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
 
         var result = sut.FindControl(c => c.AbsoluteDataJsonPath == "$.firstName");
@@ -547,7 +548,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_FindControl_NoMatch_Then_ReturnsNull()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
 
         var result = sut.FindControl(c => c.AbsoluteDataJsonPath == "nonExistentField");
@@ -558,7 +559,7 @@ public sealed class JsonFormContextTests
     [Test]
     public void When_FindControls_Then_ReturnsAllMatching()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
 
         var results = sut.FindControls(_ => true).ToList();
@@ -573,7 +574,7 @@ public sealed class JsonFormContextTests
     [Test]
     public async Task When_NotifyControlValueChanged_And_HandlerRegistered_Then_HandlerIsCalled()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
 
         FormControlContext? capturedControl = null;
         initOptions.OnControlValueChanged += (control, _) =>
@@ -596,7 +597,7 @@ public sealed class JsonFormContextTests
     [Test]
     public async Task When_NotifyControlValueChanged_And_MultipleHandlers_Then_AllAreCalled()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
 
         var callCount = 0;
         initOptions.OnControlValueChanged += (_, _) => { callCount++; return Task.CompletedTask; };
@@ -615,7 +616,7 @@ public sealed class JsonFormContextTests
     [Test]
     public async Task When_NotifyControlValueChanged_And_NoHandlerRegistered_Then_DoesNotThrow()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
         var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
         var page = sut.GetPage(0);
         var verticalLayout = (FormVerticalLayoutContext)page.ElementContexts[0];
@@ -627,7 +628,7 @@ public sealed class JsonFormContextTests
     [Test]
     public async Task When_NotifyControlInputChanged_And_HandlerRegistered_Then_HandlerIsCalled()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
 
         FormControlContext? capturedControl = null;
         initOptions.OnControlInputChanged += (control, _) =>
@@ -650,7 +651,7 @@ public sealed class JsonFormContextTests
     [Test]
     public async Task When_HandlerCallsUpdateValue_Via_FindControl_Then_ValueIsUpdated()
     {
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
+        var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
 
         initOptions.OnControlValueChanged += (control, form) =>
         {
