@@ -20,14 +20,17 @@ public sealed class JsonFormTranslationContext(IJsonPathInterpreter jsonPathInte
     private TranslationObject[] translations = [];
     private JObject schema = [];
 
-    public void Instantiate(TranslationSchema translationSchema, JSchema dataSchema)
+    public void Instantiate(
+        TranslationSchema translationSchema,
+        JSchema dataSchema,
+        DefaultTranslationResourcesDictionary? defaultTranslations = null)
     {
         if (translations?.Length > 0)
         {
             throw new InvalidOperationException("Translation context is already instantiated.");
         }
 
-        translations = [.. ConvertToTranslationObjects(translationSchema)];
+        translations = [.. ConvertToTranslationObjects(translationSchema, defaultTranslations)];
 
         schema = JObject.Parse(dataSchema.ToString());
     }
@@ -200,9 +203,35 @@ public sealed class JsonFormTranslationContext(IJsonPathInterpreter jsonPathInte
         return translations.FirstOrDefault(x => x.Language.Equals(language, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static IEnumerable<TranslationObject> ConvertToTranslationObjects(TranslationSchema translationSchema)
+    private static IEnumerable<TranslationObject> ConvertToTranslationObjects(
+        TranslationSchema translationSchema,
+        DefaultTranslationResourcesDictionary? defaultTranslations)
     {
-        return translationSchema.Resources.Select(x => ConvertToTranslationObject(x.Key, x.Value));
+        var result = translationSchema.Resources
+            .Select(x => ConvertToTranslationObject(x.Key, x.Value))
+            .ToList();
+
+        if (defaultTranslations is null || defaultTranslations.Count == 0)
+            return result;
+
+        foreach (var (language, defaultSections) in defaultTranslations)
+        {
+            var translation = result.FirstOrDefault(x => x.Language.Equals(language, StringComparison.OrdinalIgnoreCase));
+            if (translation is null)
+            {
+                result.Add(new TranslationObject(
+                    language,
+                    new Dictionary<string, TranslationSection>(defaultSections, StringComparer.OrdinalIgnoreCase)));
+                continue;
+            }
+
+            foreach (var (key, section) in defaultSections)
+            {
+                translation.Sections.TryAdd(key, section);
+            }
+        }
+
+        return result;
     }
 
     private static TranslationObject ConvertToTranslationObject(string language, TranslationSchemaResource resource)

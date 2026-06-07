@@ -71,6 +71,12 @@ public sealed class JsonFormOptions
     public bool ReadOnly { get; init; }
 
     /// <summary>
+    /// Default translation sections grouped by language code. These are merged into the form's
+    /// translation schema only when the user schema does not already define a key.
+    /// </summary>
+    public DefaultTranslationResourcesDictionary DefaultTranslations { get; init; } = [];
+
+    /// <summary>
     /// Per-form factory configuration. Runs on this form's own (transient) sub-factory instances,
     /// on top of the application defaults set in <c>AddJsonForms</c>, so a single form can override a
     /// component type, register an alias, or add parameters without affecting other forms.

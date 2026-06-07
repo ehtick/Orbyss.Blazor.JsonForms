@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Interpretation;
 using Orbyss.Blazor.JsonForms.Core.Interpretation;
 using Orbyss.Blazor.JsonForms.Core.UiSchema;
@@ -6,10 +6,9 @@ using System.Text.Json.Nodes;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Interpretation;
 
-[TestFixture]
 public sealed class FormUiSchemaInterpreterTests
 { 
-    [Test]
+    [Xunit.Fact]
     public void When_Interpret_Then_Returns_UiSchemaInterpretation()
     {
         // Arrange
@@ -42,7 +41,7 @@ public sealed class FormUiSchemaInterpreterTests
         Assert.That(firstRowControlElement.Label?.Label, Is.EqualTo("firstName"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Interpret_And_CategorizationChildElements_NotContainOnlyCategories_Then_ThrowsException()
     {
         // Arrange
@@ -67,7 +66,7 @@ public sealed class FormUiSchemaInterpreterTests
         Assert.That(e.Message, Is.EqualTo("For a UI Schema of type categorization, all direct child elements must be of type Category"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Interpret_And_HorizontalLayout_DoesNotHave_ChildElements_Then_ThrowsException()
     {
         // Arrange
@@ -91,7 +90,7 @@ public sealed class FormUiSchemaInterpreterTests
         Assert.That(e.Message, Is.EqualTo("Horizontal layout element must have elements defined"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Interpret_And_VerticalLayout_DoesNotHave_ChildElements_Then_ThrowsException()
     {
         // Arrange
@@ -115,7 +114,7 @@ public sealed class FormUiSchemaInterpreterTests
         Assert.That(e.Message, Is.EqualTo("Vertical layout element must have elements defined"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Interpret_Then_Sets_Disabled_ReadOnly_And_Hidden_From_Options()
     {
         // Arrange
@@ -173,7 +172,7 @@ public sealed class FormUiSchemaInterpreterTests
 
     // ── Options extraction — GetOption on interpreted models ─────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Control_HasOptions_Then_GetOption_Returns_Correct_Value()
     {
         // Arrange
@@ -210,7 +209,7 @@ public sealed class FormUiSchemaInterpreterTests
         Assert.That($"{control!.GetOption("step")}",      Is.EqualTo("100"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Control_HasNoOptions_Then_GetOption_Returns_Null()
     {
         // Arrange
@@ -237,7 +236,7 @@ public sealed class FormUiSchemaInterpreterTests
         Assert.That(control!.GetOption("step"),      Is.Null);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Control_HasJObjectOptions_Then_GetOption_Works()
     {
         // Arrange — use a Newtonsoft JObject directly rather than System.Text.Json JsonObject
@@ -269,7 +268,7 @@ public sealed class FormUiSchemaInterpreterTests
         Assert.That($"{control!.GetOption("min")}",         Is.EqualTo("0"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Interpret_Then_UiSchemaInterpretation_HasOnlyPages()
     {
         // Verifies the new simplified UiSchemaInterpretation (no FormUiSchema reference)
@@ -293,7 +292,7 @@ public sealed class FormUiSchemaInterpreterTests
             "UiSchemaInterpretation must not expose a FormUiSchema property");
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ActionButton_HasOptions_Then_GetOption_Returns_Correct_Value()
     {
         // Arrange
@@ -338,3 +337,4 @@ public sealed class FormUiSchemaInterpreterTests
         );
     }
 }
+

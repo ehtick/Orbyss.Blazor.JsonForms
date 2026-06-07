@@ -8,7 +8,6 @@ using Orbyss.Blazor.JsonForms.Extensions;
 
 namespace Orbyss.Blazor.JsonForms.Tests.ComponentFactory;
 
-[TestFixture]
 public sealed class FormComponentFactoryOptionsTests
 {
     private sealed class DummyInput : FormInputComponentBase<string?> { }
@@ -28,7 +27,7 @@ public sealed class FormComponentFactoryOptionsTests
 
     // ── ApplyTo (per-form pipeline) ───────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_ApplyTo_Then_ConfigureControls_OverridesSlot()
     {
         var control = new ControlComponentFactory { TextInputComponentType = typeof(DummyInput) };
@@ -43,7 +42,7 @@ public sealed class FormComponentFactoryOptionsTests
         Assert.That(control.TextInputComponentType, Is.EqualTo(typeof(OtherInput)));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ApplyTo_And_OverrideAfterDefault_Then_PerFormParameterWinsLast()
     {
         var control = new ControlComponentFactory();
@@ -62,7 +61,7 @@ public sealed class FormComponentFactoryOptionsTests
         Assert.That(entries[^1].Value, Is.EqualTo("per-form"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ApplyTo_And_RegisterAlias_Then_AliasResolves()
     {
         var control = new ControlComponentFactory();
@@ -77,7 +76,7 @@ public sealed class FormComponentFactoryOptionsTests
         Assert.That(control.ResolveAlias("rating"), Is.EqualTo(typeof(OtherInput)));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ApplyTo_And_FactoryNotDerivedFromConfigurableBase_Then_Throws()
     {
         var (b, n, l, a, ar) = Defaults();
@@ -87,7 +86,7 @@ public sealed class FormComponentFactoryOptionsTests
             () => options.ApplyTo(new FakeControlFactory(), b, n, l, a, ar));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ApplyTo_And_NoCallbacks_Then_NothingChanges()
     {
         var control = new ControlComponentFactory { TextInputComponentType = typeof(DummyInput) };
@@ -100,7 +99,7 @@ public sealed class FormComponentFactoryOptionsTests
 
     // ── Transient registration (form-scoped instances) ────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_AddJsonForms_Then_SubFactoriesAreTransient()
     {
         var services = new ServiceCollection();
@@ -115,7 +114,7 @@ public sealed class FormComponentFactoryOptionsTests
         Assert.That(first, Is.Not.SameAs(second));   // a fresh instance per resolution → per form
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_AddJsonForms_WithConfiguredDefaults_Then_EveryInstanceStartsFromThoseDefaults()
     {
         var services = new ServiceCollection();
@@ -130,3 +129,4 @@ public sealed class FormComponentFactoryOptionsTests
         Assert.That(b.TextInputComponentType, Is.EqualTo(typeof(DummyInput)));
     }
 }
+

@@ -7,13 +7,12 @@ using Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
 
-[TestFixture]
 public sealed class JsonFormDataContextTests
 {
     private const string schemaJson = "{\"properties\":{\"firstName\":{\"type\":\"string\", \"minLength\": 50}}, \"required\":[\"firstName\"]}";
     private static readonly JSchema schema = JSchema.Parse(schemaJson);
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetValue_Then_Returns_Value_For_ControlContext()
     {
         // Arrange
@@ -34,7 +33,7 @@ public sealed class JsonFormDataContextTests
         Assert.That($"{result}", Is.EqualTo("Johannes"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_SetValue_Then_Returns_Value_For_ControlContext()
     {
         // Arrange
@@ -56,7 +55,7 @@ public sealed class JsonFormDataContextTests
         Assert.That($"{result}", Is.EqualTo("Hendrik"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Validate_Then_SetsErrorMessagesWhenInvalid()
     {
         // Arrange
@@ -81,7 +80,7 @@ public sealed class JsonFormDataContextTests
         Assert.That(errors[0], Is.EqualTo(ErrorType.MinimumLength));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Validate_And_Is_Required_SetsErrorMessagesWhenInvalid()
     {
         // Arrange
@@ -121,3 +120,4 @@ public sealed class JsonFormDataContextTests
         return new FormControlContext("$.firstName", "$", formControlInterpretation);
     }
 }
+

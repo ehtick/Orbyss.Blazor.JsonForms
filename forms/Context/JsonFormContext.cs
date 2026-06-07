@@ -19,7 +19,8 @@ public sealed class JsonFormContext(
     IJsonFormTranslationContext translationContext,
     IFormUiSchemaInterpreter uiSchemaInterpreter,
     IFormElementContextFactory elementContextFactory,
-    IFormRuleEnforcer ruleEnforcer
+    IFormRuleEnforcer ruleEnforcer,
+    IEnumerable<IJsonFormDefaultTranslationProvider>? defaultTranslationProviders = null
 )
     : IJsonFormContext
 {
@@ -27,6 +28,7 @@ public sealed class JsonFormContext(
     private string? activeLanguage;
     private JObject options = [];
     private JsonFormOptions? initOptions;
+    private DefaultTranslationResourcesDictionary defaultTranslations = [];
 
     private bool disabled;
     private bool readOnly;
@@ -61,7 +63,8 @@ public sealed class JsonFormContext(
         var uiSchema = initOpts.UiSchema;
 
         dataContext.Instantiate(data, dataSchema);
-        translationContext.Instantiate(translationSchema, dataSchema);
+        defaultTranslations = MergeDefaultTranslations(initOpts.DefaultTranslations, defaultTranslationProviders);
+        translationContext.Instantiate(translationSchema, dataSchema, defaultTranslations);
 
         disabled = initOpts.Disabled;
         activeLanguage = initOpts.Language;
@@ -239,6 +242,41 @@ public sealed class JsonFormContext(
 
         var labelInterp = new UiSchemaLabelInterpretation(Label: rawKey, I18n: rawKey);
         return translationContext.TranslateLabel(ActiveLanguage, labelInterp) ?? rawKey;
+    }
+
+    public string? GetTranslatedLabel(string translationKey)
+    {
+        if (string.IsNullOrWhiteSpace(translationKey))
+            return null;
+
+        var labelInterpretation = new UiSchemaLabelInterpretation(translationKey, translationKey);
+        return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation);
+    }
+
+    public JsonFormOptions CreateArrayItemFormOptions(Guid arrayContextId, JToken? itemData = null)
+    {
+        if (initOptions is null)
+            throw new InvalidOperationException("The form context has not been instantiated.");
+
+        var match = FindContextById(arrayContextId);
+        var arrayContext = CastArray(match);
+        var itemSchemaToken = JToken.Parse($"{initOptions.DataSchema}")
+            .SelectToken(arrayContext.Interpretation.AbsoluteItemsSchemaJsonPath, false)
+            ?? throw new InvalidOperationException(
+                $"Could not find the array item schema at '{arrayContext.Interpretation.AbsoluteItemsSchemaJsonPath}'.");
+
+        return new JsonFormOptions(
+            Newtonsoft.Json.Schema.JSchema.Parse($"{itemSchemaToken}"),
+            ToRootUiSchema(arrayContext.Interpretation.ItemUiSchema),
+            initOptions.TranslationSchema)
+        {
+            ConfigureFactories = initOptions.ConfigureFactories,
+            Data = itemData?.DeepClone() ?? new JObject(),
+            DefaultTranslations = new DefaultTranslationResourcesDictionary(defaultTranslations),
+            Disabled = disabled,
+            Language = activeLanguage,
+            ReadOnly = readOnly
+        };
     }
 
     public string? GetCssClass(Guid elementContextId)
@@ -515,6 +553,54 @@ public sealed class JsonFormContext(
         }
 
         throw new InvalidOperationException($"Could not find context by id '{id}'");
+    }
+
+    private static Core.UiSchema.FormUiSchema ToRootUiSchema(Core.UiSchema.FormUiSchemaElement element)
+    {
+        return new Core.UiSchema.FormUiSchema(
+            element.Type,
+            element.Scope,
+            element.Label,
+            element.Elements,
+            element.Options);
+    }
+
+    private static DefaultTranslationResourcesDictionary MergeDefaultTranslations(
+        DefaultTranslationResourcesDictionary optionDefaults,
+        IEnumerable<IJsonFormDefaultTranslationProvider>? providers)
+    {
+        var result = new DefaultTranslationResourcesDictionary();
+
+        MergeInto(result, optionDefaults);
+
+        if (providers is not null)
+        {
+            foreach (var provider in providers)
+            {
+                MergeInto(result, provider.GetDefaultTranslations());
+            }
+        }
+
+        return result;
+    }
+
+    private static void MergeInto(
+        DefaultTranslationResourcesDictionary target,
+        DefaultTranslationResourcesDictionary source)
+    {
+        foreach (var (language, sourceSections) in source)
+        {
+            if (!target.TryGetValue(language, out var targetSections))
+            {
+                targetSections = new Dictionary<string, TranslationSection>(StringComparer.OrdinalIgnoreCase);
+                target[language] = targetSections;
+            }
+
+            foreach (var (key, section) in sourceSections)
+            {
+                targetSections.TryAdd(key, section);
+            }
+        }
     }
 
     private void RemoveHiddenElements()

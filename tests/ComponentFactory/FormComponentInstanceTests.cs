@@ -2,12 +2,11 @@ using Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 namespace Orbyss.Blazor.JsonForms.Tests.ComponentFactory;
 
-[TestFixture]
 public sealed class FormComponentInstanceTests
 {
     // ── FormComponentInstance ────────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Created_Then_ComponentType_IsSet()
     {
         var instance = new FormComponentInstance(typeof(string));
@@ -15,7 +14,7 @@ public sealed class FormComponentInstanceTests
         Assert.That(instance.ComponentType, Is.EqualTo(typeof(string)));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Created_Then_Parameters_IsEmpty()
     {
         var instance = new FormComponentInstance(typeof(string));
@@ -23,7 +22,7 @@ public sealed class FormComponentInstanceTests
         Assert.That(instance.Parameters, Is.Empty);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Parameter_Added_Then_IsRetrievable()
     {
         var instance = new FormComponentInstance(typeof(string));
@@ -32,7 +31,7 @@ public sealed class FormComponentInstanceTests
         Assert.That(instance.Parameters["Label"], Is.EqualTo("First name"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Parameter_Added_With_DifferentCase_Then_Overwrites()
     {
         // Parameters dictionary is case-insensitive
@@ -44,7 +43,7 @@ public sealed class FormComponentInstanceTests
         Assert.That(instance.Parameters["LABEL"], Is.EqualTo("Last name"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Treated_As_IComponentInstance_Then_Members_AreAccessible()
     {
         IComponentInstance instance = new FormComponentInstance(typeof(int));
@@ -54,3 +53,4 @@ public sealed class FormComponentInstanceTests
         Assert.That(instance.Parameters["X"], Is.EqualTo(42));
     }
 }
+

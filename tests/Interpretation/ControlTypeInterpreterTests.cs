@@ -1,14 +1,13 @@
-﻿using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Interpretation;
 using Orbyss.Blazor.JsonForms.Core.Interpretation;
 using Orbyss.Blazor.JsonForms.Interpretation.Exceptions;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Interpretation;
 
-[TestFixture]
 public sealed class ControlTypeInterpreterTests
 {
-    [Test]
+    [Xunit.Fact]
     public void When_Interpret_And_ThereIsNoSchemaSectionForControl_Then_ThrowsException()
     {
         // Arrange
@@ -24,7 +23,7 @@ public sealed class ControlTypeInterpreterTests
         });
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Interpret_And_SchemaTypeDoesNotHaveValue_Then_ThrowsException()
     {
         // Arrange
@@ -40,7 +39,7 @@ public sealed class ControlTypeInterpreterTests
         });
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_HandleStringType_And_FormatEqualsDateTime_Then_ReturnsDateTimeControlType()
     {
         // Arrange
@@ -55,7 +54,7 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.DateTime));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_HandleStringType_And_FormatEqualsDate_Then_ReturnsDateOnlyControlType()
     {
         // Arrange
@@ -70,7 +69,7 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.DateOnly));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_HandleStringType_And_IsEnum_Then_ReturnsEnumControlType()
     {
         // Arrange
@@ -85,7 +84,7 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.Enum));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_HandleStringType_And_IsEnumArray_Then_ReturnsEnumControlType()
     {
         // Arrange
@@ -101,7 +100,7 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.EnumList));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_HandleStringType_Then_ReturnsStringControlType()
     {
         // Arrange
@@ -116,7 +115,7 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.String));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_HandleNumericType_And_FormatEqualsDateTime_Then_ReturnsDateTimeControlType()
     {
         // Arrange
@@ -131,7 +130,7 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.DateTimeUtcTicks));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_HandleNumericType_And_FormatEqualsDate_Then_ReturnsDateOnlyControlType()
     {
         // Arrange
@@ -146,7 +145,7 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.DateOnlyUtcTicks));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_HandleNumericType_Then_ReturnsNumericControlType()
     {
         // Arrange
@@ -161,7 +160,7 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.Number));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_JschemaTypeBoolean_Then_ReturnsBooleanControlType()
     {
         // Arrange
@@ -176,7 +175,7 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.Boolean));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_JschemaTypeInteger_Then_ReturnsIntegerControlType()
     {
         // Arrange
@@ -191,3 +190,4 @@ public sealed class ControlTypeInterpreterTests
         Assert.That(result, Is.EqualTo(ControlType.Integer));
     }
 }
+

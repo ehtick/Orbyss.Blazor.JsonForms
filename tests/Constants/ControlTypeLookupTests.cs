@@ -5,19 +5,18 @@ using Orbyss.Blazor.JsonForms.Core.Models;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Constants;
 
-[TestFixture]
 public sealed class ControlTypeLookupTests
 {
     // ── GetForControlType ────────────────────────────────────────────────────
 
-    [Test]
-    [TestCase(ControlType.String,           typeof(string))]
-    [TestCase(ControlType.Number,           typeof(double?))]
-    [TestCase(ControlType.Integer,          typeof(int?))]
-    [TestCase(ControlType.Boolean,          typeof(bool))]
-    [TestCase(ControlType.Enum,             typeof(string))]
-    [TestCase(ControlType.DateTime,         typeof(DateTime?))]
-    [TestCase(ControlType.DateOnly,         typeof(DateOnly?))]
+    [Xunit.Theory]
+    [Xunit.InlineData(ControlType.String,           typeof(string))]
+    [Xunit.InlineData(ControlType.Number,           typeof(double?))]
+    [Xunit.InlineData(ControlType.Integer,          typeof(int?))]
+    [Xunit.InlineData(ControlType.Boolean,          typeof(bool))]
+    [Xunit.InlineData(ControlType.Enum,             typeof(string))]
+    [Xunit.InlineData(ControlType.DateTime,         typeof(DateTime?))]
+    [Xunit.InlineData(ControlType.DateOnly,         typeof(DateOnly?))]
     public void When_GetForControlType_Then_Returns_CorrectClrType(ControlType controlType, Type expectedType)
     {
         var result = ControlTypeLookup.GetForControlType(controlType);
@@ -27,13 +26,13 @@ public sealed class ControlTypeLookupTests
 
     // ── ConvertFromJToken — null / JSON null ──────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsNull_Then_Returns_Null_For_String()
     {
         Assert.That(ControlTypeLookup.ConvertFromJToken(null, ControlType.String), Is.Null);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsNull_Then_Returns_False_For_Boolean()
     {
         // Boolean has a non-nullable CLR type — null token → false
@@ -42,7 +41,7 @@ public sealed class ControlTypeLookupTests
         Assert.That(result, Is.EqualTo(false));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsJsonNull_Then_Returns_Null_For_Number()
     {
         var result = ControlTypeLookup.ConvertFromJToken(JValue.CreateNull(), ControlType.Number);
@@ -52,7 +51,7 @@ public sealed class ControlTypeLookupTests
 
     // ── ConvertFromJToken — value types ───────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsString_Then_Returns_String()
     {
         var result = ControlTypeLookup.ConvertFromJToken(new JValue("hello"), ControlType.String);
@@ -60,7 +59,7 @@ public sealed class ControlTypeLookupTests
         Assert.That(result, Is.EqualTo("hello"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsNumber_Then_Returns_Double()
     {
         var result = ControlTypeLookup.ConvertFromJToken(new JValue(3.14), ControlType.Number);
@@ -68,7 +67,7 @@ public sealed class ControlTypeLookupTests
         Assert.That(result, Is.EqualTo(3.14));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsInteger_Then_Returns_Int()
     {
         var result = ControlTypeLookup.ConvertFromJToken(new JValue(42), ControlType.Integer);
@@ -76,7 +75,7 @@ public sealed class ControlTypeLookupTests
         Assert.That(result, Is.EqualTo(42));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsTrue_Then_Returns_True_For_Boolean()
     {
         var result = ControlTypeLookup.ConvertFromJToken(new JValue(true), ControlType.Boolean);
@@ -84,7 +83,7 @@ public sealed class ControlTypeLookupTests
         Assert.That(result, Is.EqualTo(true));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsEnumString_Then_Returns_String()
     {
         var result = ControlTypeLookup.ConvertFromJToken(new JValue("active"), ControlType.Enum);
@@ -92,7 +91,7 @@ public sealed class ControlTypeLookupTests
         Assert.That(result, Is.EqualTo("active"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsEnumList_Then_Returns_IEnumerableOfString()
     {
         var token  = JArray.FromObject(new[] { "a", "b", "c" });
@@ -102,7 +101,7 @@ public sealed class ControlTypeLookupTests
         Assert.That((IEnumerable<string>)result!, Is.EquivalentTo(new[] { "a", "b", "c" }));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsDateTimeUtcTicks_Then_Returns_DateTimeUtcTicks()
     {
         var ticks  = DateTime.UtcNow.Ticks;
@@ -112,7 +111,7 @@ public sealed class ControlTypeLookupTests
         Assert.That(((DateTimeUtcTicks)result!).UtcTicks, Is.EqualTo(ticks));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Token_IsDateOnlyString_Then_Returns_DateOnly()
     {
         var result = ControlTypeLookup.ConvertFromJToken(new JValue("2024-06-15"), ControlType.DateOnly);
@@ -120,3 +119,4 @@ public sealed class ControlTypeLookupTests
         Assert.That(result, Is.EqualTo(new DateOnly(2024, 6, 15)));
     }
 }
+

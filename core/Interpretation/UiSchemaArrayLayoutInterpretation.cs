@@ -1,4 +1,5 @@
 using Newtonsoft.Json.Linq;
+using Orbyss.Blazor.JsonForms.Core.UiSchema;
 
 namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
@@ -19,6 +20,7 @@ public sealed class UiSchemaArrayLayoutInterpretation(
     string arrayJsonPropertyName,
     string? absoluteParentObjectSchemaPath,
     string? addLabel,
+    FormUiSchemaElement itemUiSchema,
     UiSchemaElementInterpretationBase itemsInterpretation,
     IReadOnlyDictionary<string, JToken?> options,
     UiSchemaRuleInterpretation? rule)
@@ -47,6 +49,9 @@ public sealed class UiSchemaArrayLayoutInterpretation(
     /// Translation key for the "add item" button label.  <c>null</c> means use the default <c>+</c>.
     /// </summary>
     public string? AddLabel { get; } = addLabel;
+
+    /// <summary>The UI schema element used to render and validate a single array item.</summary>
+    public FormUiSchemaElement ItemUiSchema { get; } = itemUiSchema;
 
     /// <summary>The interpreted layout shown for each array item row.</summary>
     public UiSchemaElementInterpretationBase ItemsInterpretation { get; } = itemsInterpretation;

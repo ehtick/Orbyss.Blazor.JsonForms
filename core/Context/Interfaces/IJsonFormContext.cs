@@ -48,6 +48,12 @@ public interface IJsonFormContext
 
     string? GetArrayAddLabel(Guid arrayContextId);
 
+    /// <summary>Resolves a standalone label key through the active translation schema.</summary>
+    string? GetTranslatedLabel(string translationKey);
+
+    /// <summary>Creates isolated form options for editing one item of an <c>ArrayLayout</c>.</summary>
+    JsonFormOptions CreateArrayItemFormOptions(Guid arrayContextId, JToken? itemData = null);
+
     IEnumerable<TranslatedEnumItem> GetTranslatedEnumItems(Guid controlContextId);
 
     FormPageContext GetPage(int index);

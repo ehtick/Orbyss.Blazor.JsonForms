@@ -8,15 +8,14 @@ using Orbyss.Blazor.JsonForms.Core.UiSchema;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
 
-[TestFixture]
 public sealed class FormRuleEnforcerTests
 {
     private const string jsonSchema = "{\"properties\":{\"address\":{\"type\":\"object\",\"properties\":{\"street\":{\"type\":\"string\"},\"streetNumber\":{\"type\":\"string\"}}}}}";
     private static readonly FormElementContextFactory contextFactory = new(new JsonPathInterpreter());
 
-    [Test]
-    [TestCase(UiSchemaElementRuleEffect.Hide, true)]
-    [TestCase(UiSchemaElementRuleEffect.Show, false)]
+    [Xunit.Theory]
+    [Xunit.InlineData(UiSchemaElementRuleEffect.Hide, true)]
+    [Xunit.InlineData(UiSchemaElementRuleEffect.Show, false)]
     public void When_EnforceHideAndShowRules_And_RuleMustBeEnforced_Then_Applies_Effect_To_ContextUnderEvaluation(UiSchemaElementRuleEffect effect, bool expectedHiddenValue)
     {
         // Arrange
@@ -68,9 +67,9 @@ public sealed class FormRuleEnforcerTests
         Assert.That(streetContext.Hidden, Is.EqualTo(expectedHiddenValue));
     }
 
-    [Test]
-    [TestCase(UiSchemaElementRuleEffect.Disable, true)]
-    [TestCase(UiSchemaElementRuleEffect.Enable, false)]
+    [Xunit.Theory]
+    [Xunit.InlineData(UiSchemaElementRuleEffect.Disable, true)]
+    [Xunit.InlineData(UiSchemaElementRuleEffect.Enable, false)]
     public void When_EnforceDisableAndEnableRules_And_RuleMustBeEnforced_Then_Applies_Effect_To_ContextUnderEvaluation(UiSchemaElementRuleEffect effect, bool expectedDisabledValue)
     {
         // Arrange
@@ -122,7 +121,7 @@ public sealed class FormRuleEnforcerTests
         Assert.That(streetContext.Disabled, Is.EqualTo(expectedDisabledValue));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_EnforceRulesForPages_And_RuleMustBeEnforced_Then_Applies_Effect_To_PageUnderEvaluation()
     {
         // Arrange
@@ -192,3 +191,4 @@ public sealed class FormRuleEnforcerTests
         );
     }
 }
+

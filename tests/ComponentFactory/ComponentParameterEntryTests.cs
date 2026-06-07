@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 
 namespace Orbyss.Blazor.JsonForms.Tests.ComponentFactory;
 
-[TestFixture]
 public sealed class ComponentParameterEntryTests
 {
     // ── Dummy component type used as the expression target ───────────────────
@@ -17,7 +16,7 @@ public sealed class ComponentParameterEntryTests
 
     // ── ResolveParameterName — direct property access ────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Created_With_StringProperty_Then_ParameterName_IsResolvedCorrectly()
     {
         var entry = new ComponentParameterEntry<DummyComponent, string?>(
@@ -28,7 +27,7 @@ public sealed class ComponentParameterEntryTests
         Assert.That(entry.ParameterName, Is.EqualTo("Label"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Created_With_IntProperty_Then_ParameterName_IsResolvedCorrectly()
     {
         var entry = new ComponentParameterEntry<DummyComponent, int>(
@@ -39,7 +38,7 @@ public sealed class ComponentParameterEntryTests
         Assert.That(entry.ParameterName, Is.EqualTo("MaxLength"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Created_With_BoolProperty_Then_ParameterName_IsResolvedCorrectly()
     {
         var entry = new ComponentParameterEntry<DummyComponent, bool>(
@@ -52,7 +51,7 @@ public sealed class ComponentParameterEntryTests
 
     // ── Value is stored correctly ────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Created_Then_Value_IsStored()
     {
         var entry = new ComponentParameterEntry<DummyComponent, string?>(
@@ -63,7 +62,7 @@ public sealed class ComponentParameterEntryTests
         Assert.That(entry.Value, Is.EqualTo("TestValue"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Created_With_NullValue_Then_Value_IsNull()
     {
         var entry = new ComponentParameterEntry<DummyComponent, string?>(
@@ -76,7 +75,7 @@ public sealed class ComponentParameterEntryTests
 
     // ── Cast expression (x => (object)x.Property) ───────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Created_With_CastExpression_Then_ParameterName_IsResolvedCorrectly()
     {
         // Cast the bool to object — covers the UnaryExpression path in ResolveParameterName
@@ -88,7 +87,7 @@ public sealed class ComponentParameterEntryTests
 
     // ── Invalid expression throws ────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Created_With_NonPropertyExpression_Then_Throws()
     {
         Assert.Throws<ArgumentException>(() =>
@@ -102,7 +101,7 @@ public sealed class ComponentParameterEntryTests
 
     // ── Abstract base class surface ──────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Accessed_Via_BaseClass_Then_ParameterName_And_Value_Accessible()
     {
         ComponentParameterEntry entry = new ComponentParameterEntry<DummyComponent, int>(
@@ -114,3 +113,4 @@ public sealed class ComponentParameterEntryTests
         Assert.That(entry.Value, Is.EqualTo(42));
     }
 }
+

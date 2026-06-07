@@ -1,14 +1,13 @@
-﻿using Orbyss.Blazor.JsonForms.Context.Notifications;
+using Orbyss.Blazor.JsonForms.Context.Notifications;
 using Orbyss.Blazor.JsonForms.Core.Context.Notifications;
 using System.Collections;
 using System.Reflection;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context.Notifications;
 
-[TestFixture]
 public class JsonFormNotificationHandlerTests
 {
-    [Test]
+    [Xunit.Fact]
     public void When_Subscribe_Then_Adds_Subscriber()
     {
         // Arrange
@@ -24,7 +23,7 @@ public class JsonFormNotificationHandlerTests
         AssertSubscribersLength(sut, 1);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_DisposeSubscriptionToken_Then_RemovesSubscriber()
     {
         // Arrange
@@ -41,7 +40,7 @@ public class JsonFormNotificationHandlerTests
         AssertSubscribersLength(sut, 0);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Notify_Then_InvokesCallback()
     {
         // Arrange
@@ -68,3 +67,4 @@ public class JsonFormNotificationHandlerTests
         Assert.That(dictionaryObject, Has.Count.EqualTo(expectedLength));
     }
 }
+

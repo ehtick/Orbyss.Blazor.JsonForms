@@ -1,13 +1,12 @@
-﻿using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Extensions;
 using Orbyss.Blazor.JsonForms.Core.Models;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context.Translations;
 
-[TestFixture]
 public class TranslationErrorSectionTests
 {
-    [Test]
+    [Xunit.Fact]
     public void When_GetValue_Then_Returns_Value_For_ErrorType()
     {
         // Arrange
@@ -50,7 +49,7 @@ public class TranslationErrorSectionTests
         Assert.That(patternError, Is.EqualTo(sut.Pattern));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetValue_And_CustomMessageSpecified_Then_Returns_CustomMessage()
     {
         // Arrange
@@ -93,7 +92,7 @@ public class TranslationErrorSectionTests
         Assert.That(patternError, Is.EqualTo(sut.Custom));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetValue_And_CustomMessageSpecified_ButErrorSpecificMessageAlsoSpecified_Then_Returns_ErrorTypeSpecificMessage()
     {
         // Arrange
@@ -118,7 +117,7 @@ public class TranslationErrorSectionTests
         Assert.That(constError, Is.EqualTo(sut.Const));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetValue_And_ErrorSectionIsDefault_ThenReturns_DefaultMessages()
     {
         // Arrange
@@ -149,3 +148,4 @@ public class TranslationErrorSectionTests
         Assert.That(patternError, Is.EqualTo(DefaultJsonFormValidationMessages.Pattern));
     }
 }
+

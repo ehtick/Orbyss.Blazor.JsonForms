@@ -1,4 +1,4 @@
-﻿using Microsoft.JSInterop.Implementation;
+using Microsoft.JSInterop.Implementation;
 using Newtonsoft.Json.Linq;
 using Orbyss.Blazor.JsonForms.Core.Context.Models;
 using Orbyss.Blazor.JsonForms.Context.Notifications;
@@ -9,7 +9,6 @@ using Orbyss.Blazor.JsonForms.Core;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
 
-[TestFixture]
 public sealed class JsonFormContextTests
 {
     private const string jsonSchema = "{\"properties\":{\"firstName\":{\"type\":\"string\", \"maxLength\": 6},\"surname\":{\"type\":\"string\"}}}";
@@ -25,7 +24,7 @@ public sealed class JsonFormContextTests
     private const string uiSchemaWithEnumItemOptions = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/role\",\"options\":{\"enumItemOptions\":{\"admin\":{\"helperText\":\"Full access\"},\"user\":{\"helperText\":\"Standard access\"}}}}]}";
     private const string jsonSchemaWithEnum = "{\"properties\":{\"role\":{\"type\":\"string\",\"enum\":[\"admin\",\"user\",\"guest\"]}}}";
 
-    [Test]
+    [Xunit.Fact]
     public void When_Instantiate_Then_SetsUpContext()
     {
         // Arrange
@@ -62,7 +61,73 @@ public sealed class JsonFormContextTests
         Assert.That($"{formOption}", Is.EqualTo("custom-option-value"));
     }
 
-    [Test]
+    [Xunit.Fact]
+    public void When_GetTranslatedLabel_And_DefaultTranslationExists_Then_ReturnsDefaultLabel()
+    {
+        // Arrange
+        var initOptions = new JsonFormOptions(
+            jsonSchema,
+            uiSchema,
+            translationSchema
+        )
+        {
+            Language = "en",
+            DefaultTranslations =
+            {
+                ["en"] = new Dictionary<string, TranslationSection>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["orbyss.form.button.submit"] = Label("Submit")
+                }
+            }
+        };
+
+        // Act
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+
+        // Assert
+        Assert.That(sut.GetTranslatedLabel("orbyss.form.button.submit"), Is.EqualTo("Submit"));
+    }
+
+    [Xunit.Fact]
+    public void When_GetTranslatedLabel_And_UserTranslationExists_Then_UserTranslationOverridesDefault()
+    {
+        // Arrange
+        const string translationSchemaWithSubmit = """
+            {
+                "resources": {
+                    "en": {
+                        "translation": {
+                            "orbyss.form.button.submit": { "label": "Send it" }
+                        }
+                    }
+                }
+            }
+            """;
+
+        var initOptions = new JsonFormOptions(
+            jsonSchema,
+            uiSchema,
+            translationSchemaWithSubmit
+        )
+        {
+            Language = "en",
+            DefaultTranslations =
+            {
+                ["en"] = new Dictionary<string, TranslationSection>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["orbyss.form.button.submit"] = Label("Submit")
+                }
+            }
+        };
+
+        // Act
+        var sut = JsonFormContextBuilder.BuildAndInstantiate(initOptions);
+
+        // Assert
+        Assert.That(sut.GetTranslatedLabel("orbyss.form.button.submit"), Is.EqualTo("Send it"));
+    }
+
+    [Xunit.Fact]
     public void When_ChangeDisabled_Then_PublishesEvent()
     {
         // Arrange
@@ -85,7 +150,10 @@ public sealed class JsonFormContextTests
         Assert.That(assertionValue, Is.EqualTo(12));
     }
 
-    [Test]
+    private static TranslationSection Label(string label)
+        => new(label, Error: null, Enums: null, NestedSections: null);
+
+    [Xunit.Fact]
     public void When_ChangeLanguage_Then_PublishesEvent()
     {
         // Arrange
@@ -108,7 +176,7 @@ public sealed class JsonFormContextTests
         Assert.That(assertionValue, Is.EqualTo(12));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ChangeReadOnly_Then_PublishesEvent()
     {
         // Arrange
@@ -131,7 +199,7 @@ public sealed class JsonFormContextTests
         Assert.That(assertionValue, Is.EqualTo(12));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Validate_Then_PublishesEvent()
     {
         // Arrange
@@ -154,7 +222,7 @@ public sealed class JsonFormContextTests
         Assert.That(assertionValue, Is.EqualTo(12));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetValue_Then_ReturnsControlJsonToken()
     {
         // Arrange
@@ -179,7 +247,7 @@ public sealed class JsonFormContextTests
         Assert.That($"{result}", Is.EqualTo("Johannes"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetValue_And_ContextIsNotFound_Then_ThrowsException()
     {
         // Arrange
@@ -195,7 +263,7 @@ public sealed class JsonFormContextTests
         Assert.That(e.Message, Is.EqualTo($"Could not find context by id '{invalidId}'"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetValue_And_ContextIsNotControl_Then_ThrowsException()
     {
         // Arrange
@@ -213,7 +281,7 @@ public sealed class JsonFormContextTests
         Assert.That(e.Message, Is.EqualTo($"Context of type '{verticalLayout.GetType()}' could not be cast to type '{typeof(FormControlContext)}'"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_UpdateValue_Then_UpdatesContextToken_And_EnforcesRules()
     {
         // Arrange
@@ -245,7 +313,7 @@ public sealed class JsonFormContextTests
         Assert.That(surnameElement.Hidden, Is.False);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_UpdatFormData_Then_UpdatesContextToken_And_EnforcesRules_And_Validates()
     {
         // Arrange
@@ -283,7 +351,7 @@ public sealed class JsonFormContextTests
         Assert.That(firstNameErrorText, Is.EqualTo(DefaultJsonFormValidationMessages.MaxLength));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetFOrmData_AndCOntrolsHidden_Then_RemovesHiddenValues()
     {
         // Arrange
@@ -318,7 +386,7 @@ public sealed class JsonFormContextTests
         Assert.That($"{jobject["surname"]}", Is.Not.EqualTo(surname));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetFormData_And_HiddenContextSharesPathWithDisplayedContext_Then_ValueIsPreserved()
     {
         // Arrange — two controls bound to the same path, one hidden, one displayed
@@ -341,7 +409,7 @@ public sealed class JsonFormContextTests
         Assert.That($"{jobject["firstName"]}", Is.EqualTo("Johannes"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetCssClass_And_OptionIsSet_Then_ReturnsOptionValue()
     {
         // Arrange
@@ -358,7 +426,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.EqualTo("my-class"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetCssClass_And_OptionIsNotSet_Then_ReturnsNull()
     {
         // Arrange
@@ -375,7 +443,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.Null);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetHelperIconText_And_OptionValueIsI18nKey_Then_ReturnsTranslatedLabel()
     {
         // Arrange — "helperKey" resolves to "This is helpful info" via the en translation
@@ -395,7 +463,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.EqualTo("This is helpful info"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetHelperIconText_And_OptionValueIsLiteralString_Then_ReturnsLiteralValue()
     {
         // Arrange — "Literal helper text" has no matching i18n key, falls back to the literal value
@@ -415,7 +483,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.EqualTo("Literal helper text"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetHelperIconText_And_OptionIsNotSet_Then_ReturnsNull()
     {
         // Arrange
@@ -432,7 +500,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.Null);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetHelperText_And_OptionValueIsI18nKey_Then_ReturnsTranslatedLabel()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchemaWithHelperText, translationSchema) { Language = "en" };
@@ -446,7 +514,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.EqualTo("This is helpful info"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetHelperText_And_OptionValueIsLiteralString_Then_ReturnsLiteralValue()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchemaWithHelperText, translationSchema) { Language = "en" };
@@ -460,7 +528,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.EqualTo("Literal helper text"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetHelperText_And_OptionIsNotSet_Then_ReturnsNull()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
@@ -474,7 +542,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.Null);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetPrefixText_And_OptionIsSet_Then_ReturnsValue()
     {
         var initOptions = new JsonFormOptions(jsonSchemaWithMinMax, uiSchemaWithPrefixSuffix, translationSchema);
@@ -488,7 +556,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.EqualTo("Age: "));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetSuffixText_And_OptionIsSet_Then_ReturnsValue()
     {
         var initOptions = new JsonFormOptions(jsonSchemaWithMinMax, uiSchemaWithPrefixSuffix, translationSchema);
@@ -502,7 +570,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.EqualTo(" years"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_InterpretControl_And_SchemaHasMinMax_Then_InterpretationContainsMinMax()
     {
         var initOptions = new JsonFormOptions(jsonSchemaWithMinMax, uiSchemaSimpleAge, translationSchema);
@@ -515,7 +583,7 @@ public sealed class JsonFormContextTests
         Assert.That(ageContext.Interpretation.Maximum, Is.EqualTo(120));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetTranslatedEnumItems_And_EnumItemOptionsSet_Then_ItemsHaveHelperText()
     {
         var initOptions = new JsonFormOptions(jsonSchemaWithEnum, uiSchemaWithEnumItemOptions, translationSchema);
@@ -533,7 +601,7 @@ public sealed class JsonFormContextTests
 
     // ── FindControl / FindControls ──────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_FindControl_ByDataPath_Then_ReturnsCorrectContext()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
@@ -545,7 +613,7 @@ public sealed class JsonFormContextTests
         Assert.That(result!.AbsoluteDataJsonPath, Is.EqualTo("$.firstName"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_FindControl_NoMatch_Then_ReturnsNull()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
@@ -556,7 +624,7 @@ public sealed class JsonFormContextTests
         Assert.That(result, Is.Null);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_FindControls_Then_ReturnsAllMatching()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
@@ -571,7 +639,7 @@ public sealed class JsonFormContextTests
 
     // ── OnControlValueChanged ───────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public async Task When_NotifyControlValueChanged_And_HandlerRegistered_Then_HandlerIsCalled()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
@@ -594,7 +662,7 @@ public sealed class JsonFormContextTests
         Assert.That(capturedControl!.Id, Is.EqualTo(firstNameContext.Id));
     }
 
-    [Test]
+    [Xunit.Fact]
     public async Task When_NotifyControlValueChanged_And_MultipleHandlers_Then_AllAreCalled()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
@@ -613,7 +681,7 @@ public sealed class JsonFormContextTests
         Assert.That(callCount, Is.EqualTo(2));
     }
 
-    [Test]
+    [Xunit.Fact]
     public async Task When_NotifyControlValueChanged_And_NoHandlerRegistered_Then_DoesNotThrow()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
@@ -625,7 +693,7 @@ public sealed class JsonFormContextTests
         Assert.DoesNotThrowAsync(() => sut.NotifyControlValueChanged(firstNameContext.Id));
     }
 
-    [Test]
+    [Xunit.Fact]
     public async Task When_NotifyControlInputChanged_And_HandlerRegistered_Then_HandlerIsCalled()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
@@ -648,7 +716,7 @@ public sealed class JsonFormContextTests
         Assert.That(capturedControl!.Id, Is.EqualTo(firstNameContext.Id));
     }
 
-    [Test]
+    [Xunit.Fact]
     public async Task When_HandlerCallsUpdateValue_Via_FindControl_Then_ValueIsUpdated()
     {
         var initOptions = new JsonFormOptions(jsonSchema, uiSchema, translationSchema);
@@ -678,3 +746,4 @@ public sealed class JsonFormContextTests
         Assert.That($"{surnameValue}", Is.EqualTo("auto-filled"));
     }
 }
+

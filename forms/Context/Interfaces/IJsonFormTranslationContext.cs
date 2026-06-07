@@ -6,7 +6,10 @@ namespace Orbyss.Blazor.JsonForms.Context.Interfaces;
 
 public interface IJsonFormTranslationContext
 {
-    void Instantiate(TranslationSchema translationSchema, JSchema dataSchema);
+    void Instantiate(
+        TranslationSchema translationSchema,
+        JSchema dataSchema,
+        DefaultTranslationResourcesDictionary? defaultTranslations = null);
 
     string TranslateErrors(string? language, IEnumerable<ErrorType> errors, UiSchemaControlInterpretationBase controlInterpretation);
 

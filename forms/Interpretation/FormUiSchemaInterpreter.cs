@@ -274,6 +274,7 @@ public sealed class FormUiSchemaInterpreter(IJsonPathInterpreter jsonPathInterpr
             jsonPropertyName,
             absoluteParentObjectSchemaPath,
             addLabel,
+            itemsUiElement,
             itemsInterpretation,
             ExtractOptions(arrayElement),
             GetRule(arrayElement)

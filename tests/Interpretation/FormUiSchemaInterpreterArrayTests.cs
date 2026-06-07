@@ -6,7 +6,6 @@ using System.Text.Json.Nodes;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Interpretation;
 
-[TestFixture]
 public sealed class FormUiSchemaInterpreterArrayTests
 {
     // JSON Schema for an array of address objects with street + city
@@ -29,7 +28,7 @@ public sealed class FormUiSchemaInterpreterArrayTests
         }
         """;
 
-    [Test]
+    [Xunit.Fact]
     public void When_InterpretArrayLayout_Then_ReturnsArrayLayoutInterpretation()
     {
         // Arrange
@@ -63,7 +62,7 @@ public sealed class FormUiSchemaInterpreterArrayTests
         Assert.That(array.AbsoluteItemsSchemaJsonPath, Is.EqualTo("$.properties.addresses.items"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_InterpretArrayLayout_WithoutItemsUiElement_Then_AutoGeneratesHorizontalLayoutFromSchema()
     {
         // Arrange — no explicit "items" UI element; interpreter should generate one from JSON Schema
@@ -101,7 +100,7 @@ public sealed class FormUiSchemaInterpreterArrayTests
         Assert.That(controlPaths, Does.Contain("city"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_InterpretArrayLayout_WithExplicitItemsUiElement_Then_UsesProvidedLayout()
     {
         // Arrange — explicit items element with only street (not city)
@@ -143,7 +142,7 @@ public sealed class FormUiSchemaInterpreterArrayTests
         Assert.That(col!.JsonPropertyName, Is.EqualTo("street"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_InterpretArrayLayout_WithAddLabelOption_Then_ParsesAddLabel()
     {
         // Arrange
@@ -171,7 +170,7 @@ public sealed class FormUiSchemaInterpreterArrayTests
         Assert.That(array.AddLabel, Is.EqualTo("addAddress"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_InterpretArrayLayout_WithoutScope_Then_ThrowsException()
     {
         // Arrange — ArrayLayout with no scope
@@ -196,3 +195,4 @@ public sealed class FormUiSchemaInterpreterArrayTests
     private static FormUiSchemaInterpreter GetSut() =>
         new(new JsonPathInterpreter(), new ControlTypeInterpreter());
 }
+

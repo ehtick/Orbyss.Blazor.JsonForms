@@ -9,7 +9,6 @@ using System.Text.Json.Nodes;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
 
-[TestFixture]
 public sealed class JsonFormTranslationContextTests
 {
     private const string jsonSchema = "{\"properties\":{\"address\":{\"type\":\"object\",\"properties\":{\"street\":{\"type\":\"string\"}}},\"addressType\":{\"type\":\"string\",\"enum\":[\"H\",\"B\",\"S\"]},\"nonTranslatedEnum\":{\"type\":\"string\",\"enum\":[\"First\",\"Second\",\"Third\"]}}}";
@@ -54,7 +53,7 @@ public sealed class JsonFormTranslationContextTests
         }
     );
 
-    [Test]
+    [Xunit.Fact]
     public void When_Instantiate_Then_SetsTranslationObjects()
     {
         // Act
@@ -77,7 +76,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(translations[0].Sections.ContainsKey("address"), Is.True);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateLabel_ForNestedControl_Then_ReturnsTransactionSectionLabel()
     {
         // Arrange
@@ -106,7 +105,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result, Is.EqualTo("Street Test Label"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateLabel_ForControl_And_LanguageUnknown_Then_Returns_HumanReadablePropertyName()
     {
         // Arrange
@@ -135,7 +134,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result, Is.EqualTo("Street"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateLabel_ForControl_And_LanguageNull_Then_Returns_DefaultTranslation()
     {
         // Arrange
@@ -164,7 +163,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result, Is.EqualTo("Street Test Label"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateLabel_ForControl_And_SectionNotFound_Then_Returns_HumanReadablePropertyName()
     {
         // Arrange
@@ -193,7 +192,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result, Is.EqualTo("Unknown nested prop"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateEnum_ForControl_Then_ReturnsTranslatedEnums()
     {
         // Arrange
@@ -231,7 +230,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result[2].Label, Is.EqualTo("School"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateEnum_ForControl_And_NoTranslationsConfigured_Then_ReturnsDefaultEnumTranslations()
     {
         // Arrange
@@ -269,7 +268,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result[2].Label, Is.EqualTo("Third"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateErrors_ForControl_Then_ReturnsErrorTranslation()
     {
         // Arrange
@@ -304,7 +303,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result, Is.EqualTo("Must make a choice. Must have min length of 10"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateErrors_ForControl_And_NoErrorTranslationsConfigured_Then_ReturnsDefaultErrorTranslation()
     {
         // Arrange
@@ -339,7 +338,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result, Is.EqualTo($"{DefaultJsonFormValidationMessages.Required}. {DefaultJsonFormValidationMessages.MinLength}"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateLabel_ForLabelInterpretation_Then_ReturnsTransactionSectionLabel()
     {
         // Arrange
@@ -359,7 +358,7 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result, Is.EqualTo("Address Test Label"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_TranslateLabel_ForLabelInterpretation_Includingi18N_Then_ReturnsTransactionSectionLabel()
     {
         // Arrange
@@ -379,3 +378,4 @@ public sealed class JsonFormTranslationContextTests
         Assert.That(result, Is.EqualTo("Some custom i18n translation"));
     }
 }
+

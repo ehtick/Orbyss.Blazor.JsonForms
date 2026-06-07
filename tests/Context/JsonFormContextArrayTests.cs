@@ -4,6 +4,7 @@ using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
 using Orbyss.Blazor.JsonForms.Core.Context.Models;
 using Orbyss.Blazor.JsonForms.Context.Utils;
 using Orbyss.Blazor.JsonForms.Core;
+using Orbyss.Blazor.JsonForms.Core.Models;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
 
@@ -12,7 +13,6 @@ namespace Orbyss.Blazor.JsonForms.Tests.Context;
 /// InstantiateArray, AddArrayItem, RemoveArrayItem, MoveArrayItem,
 /// GetArrayAddLabel, and the OnArrayItem* event hooks.
 /// </summary>
-[TestFixture]
 public sealed class JsonFormContextArrayTests
 {
     // JSON Schema: object with an "addresses" array (street + city per item)
@@ -101,7 +101,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── InstantiateArray ──────────────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_InstantiateArray_WithNoExistingData_Then_CreatesEmptyArray()
     {
         var (_, array) = BuildWithArray();
@@ -109,7 +109,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(array.Items, Is.Empty);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_InstantiateArray_WithExistingItems_Then_LoadsItemContexts()
     {
         var data = JObject.Parse("""
@@ -130,7 +130,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── AddArrayItem ──────────────────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_AddArrayItem_Then_ItemCountIncreases()
     {
         var (form, array) = BuildWithArray();
@@ -140,7 +140,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(array.Items, Has.Length.EqualTo(1));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_AddArrayItem_Then_NewItemHasCorrectIndex()
     {
         var (form, array) = BuildWithArray();
@@ -152,7 +152,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(array.Items[1].Index, Is.EqualTo(1));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_AddArrayItem_Then_ItemContextHasCorrectDataPath()
     {
         var (form, array) = BuildWithArray();
@@ -171,7 +171,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(paths, Does.Contain("$.addresses[0].city"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_AddArrayItem_Then_DataContainsNewObject()
     {
         var (form, array) = BuildWithArray();
@@ -185,7 +185,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── RemoveArrayItem ───────────────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_RemoveArrayItem_Then_ItemCountDecreases()
     {
         var (form, array) = BuildWithArray();
@@ -198,7 +198,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(array.Items, Has.Length.EqualTo(1));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_RemoveArrayItem_Then_RemainingItemIndicesAreRebased()
     {
         var (form, array) = BuildWithArray();
@@ -214,7 +214,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(array.Items[1].Index, Is.EqualTo(1));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_RemoveArrayItem_Then_DataArrayIsUpdated()
     {
         var data = JObject.Parse("""
@@ -237,7 +237,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── MoveArrayItem ─────────────────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_MoveArrayItem_Then_DataOrderChanges()
     {
         var data = JObject.Parse("""
@@ -260,7 +260,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That($"{addresses[2]["street"]}", Is.EqualTo("First"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_MoveArrayItem_Then_ContextIndicesAreRebased()
     {
         var data = JObject.Parse("""
@@ -279,7 +279,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(array.Items[1].Index, Is.EqualTo(1));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_MoveArrayItem_SameIndex_Then_NothingChanges()
     {
         var data = JObject.Parse("""
@@ -293,7 +293,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── GetArrayAddLabel ──────────────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetArrayAddLabel_And_AddLabelIsI18nKey_Then_ReturnsTranslatedLabel()
     {
         var (form, array) = BuildWithArray(uiSchema: ArrayUiSchemaWithAddLabel);
@@ -303,7 +303,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(label, Is.EqualTo("Add Address"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetArrayAddLabel_And_NoAddLabelOption_Then_ReturnsNull()
     {
         var (form, array) = BuildWithArray();
@@ -315,7 +315,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── OnArrayItemAdded event ────────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public async Task When_AddArrayItem_And_HandlerRegistered_Then_HandlerIsCalledWithCorrectIndex()
     {
         var opts = new JsonFormOptions(ArraySchema, ArrayUiSchema, TranslationSchema);
@@ -344,7 +344,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── OnArrayItemRemoved event ──────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public async Task When_RemoveArrayItem_And_HandlerRegistered_Then_HandlerIsCalledWithRemovedIndex()
     {
         var opts = new JsonFormOptions(ArraySchema, ArrayUiSchema, TranslationSchema);
@@ -371,7 +371,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── OnArrayItemMoved event ────────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public async Task When_MoveArrayItem_And_HandlerRegistered_Then_HandlerIsCalledWithFromAndToIndex()
     {
         var data = JObject.Parse("""
@@ -405,7 +405,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── Validation (minItems / maxItems) ──────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_Validate_And_ArrayBelowMinItems_Then_ValidationFails()
     {
         // Schema requires minItems: 1, start with empty array
@@ -416,7 +416,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(isValid, Is.False);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_Validate_And_ArrayMeetsMinItems_Then_ValidationPasses()
     {
         var (form, array) = BuildWithArray();
@@ -429,7 +429,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── AddArrayItem(data) — dialog-based add ─────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_AddArrayItemWithData_Then_ItemDataIsSeeded()
     {
         var (form, array) = BuildWithArray();
@@ -443,7 +443,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That(array.Items, Has.Length.EqualTo(1));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_AddArrayItemWithData_Then_SeedDataIsCloned()
     {
         var (form, array) = BuildWithArray();
@@ -459,7 +459,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── UpdateArrayItem — dialog-based edit ───────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_UpdateArrayItem_Then_ItemDataIsReplaced()
     {
         var data = JObject.Parse("""{ "addresses": [{ "street": "Old", "city": "OldCity" }] }""");
@@ -474,7 +474,7 @@ public sealed class JsonFormContextArrayTests
         Assert.That($"{addresses[0]["city"]}", Is.EqualTo("NewCity"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_UpdateArrayItem_Then_OtherItemsAreUnchanged()
     {
         var data = JObject.Parse("""
@@ -497,7 +497,7 @@ public sealed class JsonFormContextArrayTests
 
     // ── GetArrayItemData — pre-fill an edit dialog ────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetArrayItemData_Then_ReturnsCurrentItemData()
     {
         var data = JObject.Parse("""{ "addresses": [{ "street": "Main St", "city": "Springfield" }] }""");
@@ -511,9 +511,34 @@ public sealed class JsonFormContextArrayTests
         Assert.That($"{itemData["city"]}", Is.EqualTo("Springfield"));
     }
 
+    [Xunit.Fact]
+    public void When_CreateArrayItemFormOptions_Then_DefaultTranslationsAreCarriedForward()
+    {
+        var opts = new JsonFormOptions(ArraySchema, ArrayUiSchema, TranslationSchema)
+        {
+            Language = "en",
+            DefaultTranslations =
+            {
+                ["en"] = new Dictionary<string, TranslationSection>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["orbyss.form.button.add"] = new("Add", Error: null, Enums: null, NestedSections: null)
+                }
+            }
+        };
+
+        var form = JsonFormContextBuilder.BuildAndInstantiate(opts);
+        var array = GetArrayContext(form);
+        form.InstantiateArray(array.Id);
+
+        var itemOptions = form.CreateArrayItemFormOptions(array.Id);
+        var childForm = JsonFormContextBuilder.BuildAndInstantiate(itemOptions);
+
+        Assert.That(childForm.GetTranslatedLabel("orbyss.form.button.add"), Is.EqualTo("Add"));
+    }
+
     // ── OnArrayItemUpdated event ──────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public async Task When_UpdateArrayItem_And_HandlerRegistered_Then_HandlerIsCalledWithUpdatedIndex()
     {
         var data = JObject.Parse("""
@@ -544,3 +569,4 @@ public sealed class JsonFormContextArrayTests
         Assert.That(capturedIndex, Is.EqualTo(1));
     }
 }
+

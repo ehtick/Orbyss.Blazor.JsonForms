@@ -6,7 +6,6 @@ using System.Linq.Expressions;
 
 namespace Orbyss.Blazor.JsonForms.Tests.ComponentFactory;
 
-[TestFixture]
 public sealed class FormComponentFactoryTests
 {
     // ── Test component types ─────────────────────────────────────────────────
@@ -39,7 +38,7 @@ public sealed class FormComponentFactoryTests
 
     // ── ControlComponentFactory — input type slots ────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_ControlFactory_InputSlots_AreNull_ByDefault()
     {
         var factory = new ControlComponentFactory();
@@ -56,7 +55,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(factory.DateOnlyUtcTicksInputComponentType, Is.Null);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ControlFactory_InputSlot_IsSet_Then_Returns_AssignedType()
     {
         // TextComponent extends FormInputComponentBase<string?> → implements IFormComponent → valid
@@ -65,7 +64,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(factory.TextInputComponentType, Is.EqualTo(typeof(TextComponent)));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ControlFactory_MultipleSlots_AreSet_Then_EachSlot_IsIndependent()
     {
         var factory = new ControlComponentFactory
@@ -79,7 +78,7 @@ public sealed class FormComponentFactoryTests
 
     // ── IFormComponent validation ────────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_InputSlot_IsSet_To_NonIFormComponent_Type_Then_Throws()
     {
         // ButtonComponent does NOT implement IFormComponent
@@ -93,7 +92,7 @@ public sealed class FormComponentFactoryTests
 
     // ── ButtonComponentFactory — non-input slots ─────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_ButtonFactory_Slots_AreNull_ByDefault()
     {
         var factory = new ButtonComponentFactory();
@@ -103,7 +102,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(factory.PreviousButtonComponentType, Is.Null);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_NonInputSlot_IsSet_To_NonIFormComponent_Type_Then_DoesNotThrow()
     {
         // Non-input slots (buttons, navigation, list, etc.) have no IFormComponent requirement
@@ -126,7 +125,7 @@ public sealed class FormComponentFactoryTests
     // ── SetParameter — single registration ───────────────────────────────────
     // ControlComponentFactory.SetParameter is public on the concrete class.
 
-    [Test]
+    [Xunit.Fact]
     public void When_SetParameter_Called_Then_Parameter_IsRetrievable()
     {
         var factory = new ControlComponentFactory();
@@ -139,7 +138,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(parameters[0].Value, Is.EqualTo("Enter text…"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_SetParameter_CalledMultipleTimes_Then_AllParameters_AreRetrievable()
     {
         var factory = new ControlComponentFactory();
@@ -153,7 +152,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(parameters.Any(p => p.ParameterName == "Disabled"),    Is.True);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_SetParameter_For_DifferentTypes_Then_Parameters_AreIsolatedPerType()
     {
         var factory = new ControlComponentFactory();
@@ -169,7 +168,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(buttonParams[0].ParameterName, Is.EqualTo("Text"));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_SetParameter_Returns_This_For_Chaining()
     {
         var factory = new ControlComponentFactory();
@@ -180,7 +179,7 @@ public sealed class FormComponentFactoryTests
 
     // ── GetAssignedParameters — unknown type returns empty ───────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_GetAssignedParameters_For_UnregisteredType_Then_Returns_Empty()
     {
         var factory = new ControlComponentFactory();
@@ -192,13 +191,13 @@ public sealed class FormComponentFactoryTests
 
     // ── GuardRestricted — throws for engine-owned parameters ─────────────────
 
-    [Test]
-    [TestCase(nameof(ComponentWithRestrictedProps.Value))]
-    [TestCase(nameof(ComponentWithRestrictedProps.ValueChanged))]
-    [TestCase(nameof(ComponentWithRestrictedProps.Checked))]
-    [TestCase(nameof(ComponentWithRestrictedProps.CheckedChanged))]
-    [TestCase(nameof(ComponentWithRestrictedProps.Values))]
-    [TestCase(nameof(ComponentWithRestrictedProps.ValuesChanged))]
+    [Xunit.Theory]
+    [Xunit.InlineData(nameof(ComponentWithRestrictedProps.Value))]
+    [Xunit.InlineData(nameof(ComponentWithRestrictedProps.ValueChanged))]
+    [Xunit.InlineData(nameof(ComponentWithRestrictedProps.Checked))]
+    [Xunit.InlineData(nameof(ComponentWithRestrictedProps.CheckedChanged))]
+    [Xunit.InlineData(nameof(ComponentWithRestrictedProps.Values))]
+    [Xunit.InlineData(nameof(ComponentWithRestrictedProps.ValuesChanged))]
     public void When_SetParameter_With_RestrictedName_Then_Throws(string restrictedName)
     {
         var factory = new ControlComponentFactory();
@@ -236,7 +235,7 @@ public sealed class FormComponentFactoryTests
 
     // ── FormComponentParameterKeys.Restricted set coverage ───────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void Restricted_Set_Contains_All_Expected_Names()
     {
         var expected = new[]
@@ -256,7 +255,7 @@ public sealed class FormComponentFactoryTests
         }
     }
 
-    [Test]
+    [Xunit.Fact]
     public void Restricted_Set_Is_CaseInsensitive()
     {
         Assert.That(FormComponentParameterKeys.Restricted.Contains("value"),        Is.True);
@@ -267,7 +266,7 @@ public sealed class FormComponentFactoryTests
 
     // ── RegisterAlias / ResolveAlias ──────────────────────────────────────────
 
-    [Test]
+    [Xunit.Fact]
     public void When_RegisterAlias_Then_ResolveAlias_Returns_RegisteredType()
     {
         var factory = new ControlComponentFactory();
@@ -278,7 +277,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(resolved, Is.EqualTo(typeof(TextComponent)));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ResolveAlias_CaseInsensitive_Then_Matches()
     {
         var factory = new ControlComponentFactory();
@@ -289,7 +288,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(factory.ResolveAlias("Slider"), Is.EqualTo(typeof(TextComponent)));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_ResolveAlias_For_UnknownKey_Then_Returns_Null()
     {
         var factory = new ControlComponentFactory();
@@ -297,7 +296,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(factory.ResolveAlias("unknown"), Is.Null);
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_RegisterAlias_SameKey_Twice_Then_SecondRegistration_Wins()
     {
         var factory = new ControlComponentFactory();
@@ -307,7 +306,7 @@ public sealed class FormComponentFactoryTests
         Assert.That(factory.ResolveAlias("widget"), Is.EqualTo(typeof(ButtonComponent)));
     }
 
-    [Test]
+    [Xunit.Fact]
     public void When_MultipleAliases_Registered_Then_Each_Resolves_Independently()
     {
         var factory = new ControlComponentFactory();
@@ -318,3 +317,4 @@ public sealed class FormComponentFactoryTests
         Assert.That(factory.ResolveAlias("blocks"), Is.EqualTo(typeof(ButtonComponent)));
     }
 }
+
