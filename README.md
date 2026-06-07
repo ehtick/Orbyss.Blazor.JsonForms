@@ -53,13 +53,11 @@ exact capability set of this library (not the generic jsonforms.io spec).
 
 Both target **net8.0** and **net10.0**.
 
-### Ready-made UI integrations
+### Ready-made UI integration
 
-- 🧩 [Orbyss.Blazor.Syncfusion.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms)
-- 🎨 [Orbyss.Blazor.MudBlazor.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.MudBlazor.JsonForms)
+- 🧩 [Orbyss.Blazor.Syncfusion.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms) — full Syncfusion Blazor renderer, one `AddSyncfusionJsonForms()` call.
 
-Or build your own for Radzen, Telerik, Fluent UI, or plain HTML/CSS — see the
-custom-components skill.
+Or **roll your own** for Radzen, Telerik, Fluent UI, plain HTML/CSS, or anything else — it takes one factory class per slot and a DI registration. See [Bring your own UI](#%EF%B8%8F-bring-your-own-ui) below, or use the Syncfusion package as a reference implementation.
 
 ---
 
@@ -98,12 +96,12 @@ Render:
 <JsonForm InitOptions="@options" OnSubmit="HandleSubmit" />
 
 @code {
-    private JsonFormContextOptions options = new(jsonSchemaJson, uiSchemaJson, translationSchemaJson);
+    private JsonFormOptions options = new(jsonSchemaJson, uiSchemaJson, translationSchemaJson);
     private Task HandleSubmit(JToken formData) => Save(formData);
 }
 ```
 
-- `JsonFormContextOptions` takes the three schemas as **strings** or parsed objects
+- `JsonFormOptions` takes the three schemas as **strings** or parsed objects
   (`JSchema`, `FormUiSchema`, `TranslationSchema`), plus optional seed `Data`,
   initial `Language`, and `Disabled` / `ReadOnly`.
 - The form context and component factory resolve from `[Parameter]`s or DI.

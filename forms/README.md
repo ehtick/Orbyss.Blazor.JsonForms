@@ -22,6 +22,7 @@ component library to draw the inputs.
 - ✅ Automatic control-type resolution from JSON Schema
 - ✅ Localisation, validation, and conditional rules (Show / Hide / Enable / Disable)
 - ✅ Multi-page (wizard) forms, inline array repeaters, list-with-detail, action buttons
+- ✅ Inline **or dialog** array editing — driven entirely by your UI layer
 - ✅ Theming through CSS custom properties — no component edits
 - ✅ A clean, three-layer parameter-binding contract for custom components
 
@@ -166,7 +167,7 @@ rules: [schema-authoring skill](https://github.com/orbyss-io/Orbyss.Blazor.JsonF
 | Enum item helper text | `options.enumItemOptions` |
 | Per-field component override | `options.component` (alias) |
 | Per-field Blazor parameters | `options.parameters` |
-| CSS class | `options.cssClass` (append, or `!` to replace) |
+| CSS class | `options.cssClass` (append, or `!x` to replace) |
 
 Each label-like option (`helperTextLabel`, `helperIconTextLabel`, `prefixLabel`,
 `suffixLabel`, `addLabel`, plus `label`/`i18n`) is resolved as a translation key
