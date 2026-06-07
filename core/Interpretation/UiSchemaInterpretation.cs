@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Interpretation;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 /// <summary>
 /// The fully-interpreted form structure produced by <c>IFormUiSchemaInterpreter</c>.

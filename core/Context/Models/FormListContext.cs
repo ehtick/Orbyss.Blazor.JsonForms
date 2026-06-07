@@ -1,9 +1,9 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
 
-namespace Orbyss.Blazor.JsonForms.Context.Models;
+namespace Orbyss.Blazor.JsonForms.Core.Context.Models;
 
 public sealed class FormListContext(UiSchemaListInterpretation interpretation, string absoluteDataJsonPath, string? absoluteParentDataJsonPath)
     : FormControlContextBase<UiSchemaListInterpretation>(interpretation, absoluteDataJsonPath, absoluteParentDataJsonPath)

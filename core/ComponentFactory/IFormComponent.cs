@@ -1,6 +1,6 @@
 using Newtonsoft.Json.Linq;
 
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 /// <summary>
 /// Contract that every data-bound form input component must implement.

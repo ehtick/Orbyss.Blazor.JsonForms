@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Components;
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.Constants;
-using Orbyss.Blazor.JsonForms.Utils;
+using Orbyss.Blazor.JsonForms.Core.Constants;
+using Orbyss.Blazor.JsonForms.Core.Extensions;
+using Orbyss.Blazor.JsonForms.Core.Utils;
 using System.Linq.Expressions;
+using System.Reflection;
 
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 /// <summary>
 /// Shared infrastructure for all concrete sub-factory classes.
@@ -102,12 +105,35 @@ public abstract class ComponentFactoryBase
 
         foreach (var (key, value) in parametersObj)
         {
+            var parameterProperty = instance.ComponentType
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .FirstOrDefault(x => x.Name.Equals(key, StringComparison.OrdinalIgnoreCase))
+                ?? throw new InvalidOperationException($"Parameter '{key}' does not exist on component '{instance.ComponentType.Name}'");
+
+            if (parameterProperty.GetCustomAttribute<ParameterAttribute>() is null)
+                throw new InvalidOperationException($"Component '{instance.ComponentType.Name}' does not have a parameter attributed defined for '{key}'");
+
             if (FormComponentParameterKeys.Restricted.Contains(key))
                 throw new InvalidOperationException(
                     $"Parameter '{key}' is engine-owned and cannot be overridden via the UI schema " +
                     $"'parameters' option. The engine wires this automatically from the form context.");
 
-            instance.Parameters[key] = value?.ToObject<object?>();
+            if (value is null)
+            {
+                continue;
+            }
+
+            if (value is not JValue jsonValue)
+            {
+                instance.Parameters[key] = DefaultJsonConverter.Deserialize(value.ToString(), parameterProperty.PropertyType);
+                continue;
+            }
+
+            var dotnetValue = Convert.ChangeType(
+                jsonValue.ToDotnetValue(),
+                parameterProperty.PropertyType
+            );
+            instance.Parameters[key] = dotnetValue;
         }
     }
 

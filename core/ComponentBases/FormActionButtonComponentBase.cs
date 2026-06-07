@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
-using Orbyss.Blazor.JsonForms.Constants;
+using Orbyss.Blazor.JsonForms.Core.Constants;
 using System.Globalization;
 
-namespace Orbyss.Blazor.JsonForms.ComponentBases;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentBases;
 
 /// <summary>
 /// Abstract base class for action button components (buttons that fire a named action

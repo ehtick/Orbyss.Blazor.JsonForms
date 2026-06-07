@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using System.Text.Json.Serialization;
 
-namespace Orbyss.Blazor.JsonForms.UiSchema;
+namespace Orbyss.Blazor.JsonForms.Core.UiSchema;
 
 public record UiSchemaElementRule(
     [property: JsonProperty(PropertyName = "condition"), JsonPropertyName("condition")] UiSchemaElementRuleCondition Condition,

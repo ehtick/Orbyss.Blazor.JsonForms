@@ -1,23 +1,30 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
 
-@using Orbyss.Components.Json.Models;
-
 @using Orbyss.Blazor.JsonForms
-@using Orbyss.Blazor.JsonForms.Constants
+@using Orbyss.Blazor.JsonForms.Core.Constants
 @using Orbyss.Blazor.JsonForms.Interpretation
 @using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
 @using Orbyss.Blazor.JsonForms.Interpretation.Utils;
 
-@using Orbyss.Blazor.JsonForms.ComponentFactory;
-@using Orbyss.Blazor.JsonForms.ComponentBases;
+@using Orbyss.Blazor.JsonForms.Core.ComponentFactory;
+@using Orbyss.Blazor.JsonForms.Core.ComponentFactory.SubFactories;
+@using Orbyss.Blazor.JsonForms.Core.ComponentBases;
+@using Orbyss.Blazor.JsonForms.Core.Context.Interfaces
+@using Orbyss.Blazor.JsonForms.Core.Context.Notifications
+@using Orbyss.Blazor.JsonForms.Core.Interpretation
+@using Orbyss.Blazor.JsonForms.Core.Models
+
+@using Orbyss.Blazor.JsonForms.Core.Interpretation.Interfaces
 
 @using Orbyss.Blazor.JsonForms.Context
 @using Orbyss.Blazor.JsonForms.Context.Interfaces
 @using Orbyss.Blazor.JsonForms.Context.Notifications
-@using Orbyss.Blazor.JsonForms.Context.Models;
+@using Orbyss.Blazor.JsonForms.Core.Context.Models;
 @using Orbyss.Blazor.JsonForms.Context.Utils;
 @using Orbyss.Blazor.JsonForms.Utils;
+
+@using System.Reflection
 
 @using Newtonsoft.Json.Schema;
 @using Newtonsoft.Json.Linq;

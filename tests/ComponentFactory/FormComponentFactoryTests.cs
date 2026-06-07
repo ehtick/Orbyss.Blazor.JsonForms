@@ -1,8 +1,7 @@
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.ComponentBases;
-using Orbyss.Blazor.JsonForms.ComponentFactory;
-using Orbyss.Blazor.JsonForms.Constants;
+using Orbyss.Blazor.JsonForms.Core.ComponentBases;
 using Orbyss.Blazor.JsonForms.Core.ComponentFactory;
+using Orbyss.Blazor.JsonForms.Core.Constants;
 using System.Linq.Expressions;
 
 namespace Orbyss.Blazor.JsonForms.Tests.ComponentFactory;

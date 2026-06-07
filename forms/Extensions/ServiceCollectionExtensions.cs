@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Orbyss.Blazor.JsonForms.ComponentFactory;
+using Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 using Orbyss.Blazor.JsonForms.Context;
 using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Context.Notifications;
-using Orbyss.Blazor.JsonForms.Core.ComponentFactory;
-using Orbyss.Blazor.JsonForms.Interpretation;
 using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Interpretation.Interfaces;
+using Orbyss.Blazor.JsonForms.Interpretation;
+using Orbyss.Blazor.JsonForms.Context.Notifications;
+using Orbyss.Blazor.JsonForms.Core.ComponentFactory.SubFactories;
 
 namespace Orbyss.Blazor.JsonForms.Extensions;
 
@@ -46,9 +48,19 @@ public static class ServiceCollectionExtensions
 
     /// <summary>
     /// Registers the composite <see cref="IFormComponentFactory"/> and each per-slot sub-factory as
-    /// configured singletons. Sub-factories are registered with <c>TryAdd</c>, so a custom
-    /// implementation registered before <c>AddJsonForms</c> takes precedence over the default —
-    /// in which case the matching configure callback is ignored.
+    /// <b>transient</b>, so every <c>&lt;JsonForm/&gt;</c> gets its own factory instances. This is what
+    /// makes per-form configuration safe: a form can override a slot, add parameters, or register an
+    /// alias (via <c>&lt;JsonForm ConfigureFactories="…"/&gt;</c>) without mutating shared state used by
+    /// other forms.
+    ///
+    /// <para>
+    /// The <paramref name="configureFactories"/> application defaults are re-applied each time a fresh
+    /// instance is created, so every form starts from the same baseline; per-form overrides then layer
+    /// on top. Sub-factories are registered with <c>TryAdd</c>, so a custom implementation registered
+    /// before <c>AddJsonForms</c> takes precedence over the default — in which case the matching
+    /// configure callback is ignored. Replace a sub-factory wholesale by registering it (as transient)
+    /// before calling <c>AddJsonForms</c>.
+    /// </para>
     /// </summary>
     private static void AddComponentFactories(
         IServiceCollection services,
@@ -57,48 +69,48 @@ public static class ServiceCollectionExtensions
         var options = new FormComponentFactoryOptions();
         configureFactories?.Invoke(options);
 
-        services.TryAddSingleton<IControlComponentFactory>(_ =>
+        services.TryAddTransient<IControlComponentFactory>(_ =>
         {
             var factory = new ControlComponentFactory();
             options.ConfigureControls?.Invoke(factory);
             return factory;
         });
 
-        services.TryAddSingleton<IButtonComponentFactory>(_ =>
+        services.TryAddTransient<IButtonComponentFactory>(_ =>
         {
             var factory = new ButtonComponentFactory();
             options.ConfigureButtons?.Invoke(factory);
             return factory;
         });
 
-        services.TryAddSingleton<INavigationComponentFactory>(_ =>
+        services.TryAddTransient<INavigationComponentFactory>(_ =>
         {
             var factory = new NavigationComponentFactory();
             options.ConfigureNavigation?.Invoke(factory);
             return factory;
         });
 
-        services.TryAddSingleton<IListComponentFactory>(_ =>
+        services.TryAddTransient<IListComponentFactory>(_ =>
         {
             var factory = new ListComponentFactory();
             options.ConfigureList?.Invoke(factory);
             return factory;
         });
 
-        services.TryAddSingleton<IActionButtonComponentFactory>(_ =>
+        services.TryAddTransient<IActionButtonComponentFactory>(_ =>
         {
             var factory = new ActionButtonComponentFactory();
             options.ConfigureActionButtons?.Invoke(factory);
             return factory;
         });
 
-        services.TryAddSingleton<IArrayLayoutComponentFactory>(_ =>
+        services.TryAddTransient<IArrayLayoutComponentFactory>(_ =>
         {
             var factory = new ArrayLayoutComponentFactory();
             options.ConfigureArrayLayout?.Invoke(factory);
             return factory;
         });
 
-        services.TryAddSingleton<IFormComponentFactory, FormComponentFactory>();
+        services.TryAddTransient<IFormComponentFactory, FormComponentFactory>();
     }
 }

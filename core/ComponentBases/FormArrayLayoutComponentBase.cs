@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Components;
-using Orbyss.Blazor.JsonForms.Constants;
-using Orbyss.Blazor.JsonForms.Context.Models;
+using Orbyss.Blazor.JsonForms.Core.Constants;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
 using System.Globalization;
 
-namespace Orbyss.Blazor.JsonForms.ComponentBases;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentBases;
 
 /// <summary>
 /// Abstract base class for inline array repeater components (add / remove / reorder items

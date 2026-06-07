@@ -1,6 +1,6 @@
-using Orbyss.Blazor.JsonForms.UiSchema;
+using Orbyss.Blazor.JsonForms.Core.UiSchema;
 
-namespace Orbyss.Blazor.JsonForms.Interpretation;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 public sealed record UiSchemaLabelInterpretation(string? Label, string? I18n)
 {

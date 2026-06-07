@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Orbyss.Blazor.JsonForms.Constants;
+namespace Orbyss.Blazor.JsonForms.Core.Constants;
 
 /// <summary>
 /// Default culture used as the initial value for the <c>Culture</c> parameter on all form

@@ -1,4 +1,4 @@
-using Orbyss.Blazor.JsonForms.Utils;
+using Orbyss.Blazor.JsonForms.Core.Utils;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Utils;
 

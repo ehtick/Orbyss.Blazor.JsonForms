@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Interpretation;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 public sealed class UiSchemaPageInterpretation(
     bool readOnly,

@@ -2,11 +2,13 @@
 using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Context.Interfaces;
 using Orbyss.Blazor.JsonForms.Extensions;
-using Orbyss.Blazor.JsonForms.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
 using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
 using Orbyss.Blazor.JsonForms.Utils;
-using Orbyss.Components.Json.Models;
+
 using System.Text.Json;
+using Orbyss.Blazor.JsonForms.Core.Models;
+using Orbyss.Blazor.JsonForms.Core.Interpretation.Interfaces;
 
 namespace Orbyss.Blazor.JsonForms.Context;
 

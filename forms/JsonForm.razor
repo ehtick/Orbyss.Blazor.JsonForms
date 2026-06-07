@@ -1,22 +1,18 @@
 
 <CascadingValue Value="@componentFactory">
     <CascadingValue Value="@formContext">
-        <CascadingValue Value="@PageTitleClass" Name="PageTitleClass">
-            <CascadingValue Value="@GroupTitleClass" Name="GroupTitleClass">
-            @if (navigationInstance is not null)
+        @if (navigationInstance is not null)
+        {
+            var pages = formContext.GetPages();
+            @if (pages.Count() == 1)
             {
-                var pages = formContext.GetPages();
-                @if (pages.Count() == 1)
-                {
-                    <FormSinglePage OnSubmitClicked="@GetOnSubmitClickedEventCallback" Page="@(pages.First())" HideSubmitButton="@HideSubmitButton" />
-                }
-                else
-                {
-                    <DynamicComponent Type="@navigationInstance.ComponentType" Parameters="navigationInstance.Parameters" />
-                }
+                <FormSinglePage OnSubmitClicked="@GetOnSubmitClickedEventCallback" Page="@(pages.First())" HideSubmitButton="@HideSubmitButton" />
             }
-        </CascadingValue>
-    </CascadingValue>
+            else
+            {
+                <DynamicComponent Type="@navigationInstance.ComponentType" Parameters="navigationInstance.Parameters" />
+            }
+        }
     </CascadingValue>
 </CascadingValue>
 
@@ -30,17 +26,20 @@
     [Parameter]
     public IFormComponentFactory? ComponentFactory { get; set; }
 
+    /// <summary>
+    /// Per-form factory configuration. Runs on this form's own (transient) sub-factory instances,
+    /// on top of the application defaults set in <c>AddJsonForms</c>, so a single form can override a
+    /// component type, register an alias, or add parameters without affecting other forms.
+    /// Ignored when <see cref="ComponentFactory"/> is supplied (that is full manual control).
+    /// </summary>
+    [Parameter]
+    public Action<FormComponentFactoryOptions>? ConfigureFactories { get; set; }
+
     [Parameter, EditorRequired]
     public JsonFormContextOptions? InitOptions { get; set; }
 
     [Parameter]
     public IJsonFormContext? FormContext { get; set; }
-
-    [Parameter]
-    public string? GroupTitleClass { get; set; }
-
-    [Parameter]
-    public string? PageTitleClass { get; set; }
 
     [Parameter]
     public EventCallback<JToken> OnSubmit { get; set; }
@@ -109,13 +108,41 @@
 
     private IFormComponentFactory ResolveFactory()
     {
+        // Full manual control: caller supplied a ready composite.
         if (ComponentFactory is not null)
             return ComponentFactory;
 
-        return ServiceProvider.GetService<IFormComponentFactory>()
-            ?? throw new InvalidOperationException(
-                "IFormComponentFactory must be either registered in the DI container or provided as a parameter.");
+        // No per-form overrides: use the registered composite (lets a UI layer register a fully
+        // custom IFormComponentFactory router). Falls back to building one from the sub-factories.
+        if (ConfigureFactories is null)
+            return ServiceProvider.GetService<IFormComponentFactory>() ?? BuildComposite(null);
+
+        // Per-form overrides: build a composite from this form's own (transient) sub-factories and
+        // apply the overrides on top of the application defaults.
+        var options = new FormComponentFactoryOptions();
+        ConfigureFactories(options);
+        return BuildComposite(options);
     }
+
+    private IFormComponentFactory BuildComposite(FormComponentFactoryOptions? options)
+    {
+        var control      = Required<IControlComponentFactory>();
+        var button       = Required<IButtonComponentFactory>();
+        var navigation   = Required<INavigationComponentFactory>();
+        var list         = Required<IListComponentFactory>();
+        var actionButton = Required<IActionButtonComponentFactory>();
+        var arrayLayout  = Required<IArrayLayoutComponentFactory>();
+
+        options?.ApplyTo(control, button, navigation, list, actionButton, arrayLayout);
+
+        return new FormComponentFactory(control, button, navigation, list, actionButton, arrayLayout);
+    }
+
+    private T Required<T>() where T : class
+        => ServiceProvider.GetService<T>()
+            ?? throw new InvalidOperationException(
+                $"No '{typeof(T).Name}' is registered. Register a UI layer (e.g. AddSyncfusionJsonForms / " +
+                $"AddJsonForms with configured factories) or pass a ComponentFactory to <JsonForm>.");
 
     private IJsonFormContext ResolveFormContext()
     {

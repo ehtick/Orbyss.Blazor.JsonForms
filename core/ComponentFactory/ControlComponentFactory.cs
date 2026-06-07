@@ -1,11 +1,11 @@
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.ComponentFactory;
-using Orbyss.Blazor.JsonForms.Constants;
-using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Context.Models;
-using Orbyss.Blazor.JsonForms.Interpretation;
-using Orbyss.Blazor.JsonForms.Utils;
 using System.Linq.Expressions;
+using Orbyss.Blazor.JsonForms.Core.Constants;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.ComponentFactory.SubFactories;
+using Orbyss.Blazor.JsonForms.Core.Utils;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
 
 namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
@@ -137,14 +137,14 @@ public class ControlComponentFactory : ComponentFactoryBase, IControlComponentFa
     // ── IControlComponentFactory ──────────────────────────────────────────────
 
     /// <inheritdoc />
-    public IComponentInstance CreateControl(IJsonFormContext formContext, FormControlContext control)
+    public virtual IComponentInstance CreateControl(IJsonFormContext formContext, FormControlContext control)
     {
         var interpretation = control.Interpretation;
 
-        // Resolve component type: UI schema alias → slot default
+        // Resolve component type: UI schema alias → slot default (override ResolveComponentType
+        // to pick a variant by control type for an alias that maps to several components).
         var alias = interpretation.GetOption(FormUiSchemaOptionKeys.Component)?.ToString();
-        var componentType = (alias is not null ? ResolveAlias(alias) : null)
-            ?? GetSlotTypeForControlType(interpretation.ControlType)
+        var componentType = ResolveComponentType(alias, interpretation.ControlType)
             ?? throw new InvalidOperationException(
                 $"No component registered for control type '{interpretation.ControlType}'. " +
                 $"Set the corresponding *ComponentType slot on {nameof(ControlComponentFactory)}.");
@@ -191,6 +191,24 @@ public class ControlComponentFactory : ComponentFactoryBase, IControlComponentFa
         RemoveUndeclaredParameters.Remove(componentType, instance.Parameters);
         return instance;
     }
+
+    // ── Component-type resolution ─────────────────────────────────────────────
+
+    /// <summary>
+    /// Resolves the component type for a control: the UI-schema <c>component</c> alias
+    /// (<see cref="RegisterAlias"/>) takes precedence over the control-type slot.
+    ///
+    /// <para>
+    /// Override this when a single alias must map to different components depending on the control
+    /// type — e.g. a <c>"slider"</c> alias that resolves to an integer slider for
+    /// <see cref="ControlType.Integer"/> and a number slider for <see cref="ControlType.Number"/>,
+    /// which a flat <see cref="RegisterAlias"/> (one type per key) cannot express. Return
+    /// <c>null</c> to fall through to the engine's "no component registered" error.
+    /// </para>
+    /// </summary>
+    protected virtual Type? ResolveComponentType(string? alias, ControlType controlType)
+        => (alias is not null ? ResolveAlias(alias) : null)
+            ?? GetSlotTypeForControlType(controlType);
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 

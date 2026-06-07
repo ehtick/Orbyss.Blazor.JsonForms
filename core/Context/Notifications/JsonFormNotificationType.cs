@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Context.Notifications;
+namespace Orbyss.Blazor.JsonForms.Core.Context.Notifications;
 
 public enum JsonFormNotificationType
 {

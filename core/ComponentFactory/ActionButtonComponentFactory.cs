@@ -1,10 +1,11 @@
-using Orbyss.Blazor.JsonForms.Constants;
-using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Context.Models;
-using Orbyss.Blazor.JsonForms.Utils;
+using Orbyss.Blazor.JsonForms.Core.ComponentFactory.SubFactories;
+using Orbyss.Blazor.JsonForms.Core.Constants;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
+using Orbyss.Blazor.JsonForms.Core.Utils;
 using System.Linq.Expressions;
 
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 /// <summary>
 /// Default implementation of <see cref="IActionButtonComponentFactory"/>.
@@ -34,7 +35,7 @@ public class ActionButtonComponentFactory : ComponentFactoryBase, IActionButtonC
     // ── IActionButtonComponentFactory ─────────────────────────────────────────
 
     /// <inheritdoc />
-    public IComponentInstance CreateActionButton(IJsonFormContext formContext, FormActionButtonContext actionButton)
+    public virtual IComponentInstance CreateActionButton(IJsonFormContext formContext, FormActionButtonContext actionButton)
     {
         var alias = actionButton.Interpretation.GetOption(FormUiSchemaOptionKeys.Component)?.ToString();
         var componentType = (alias is not null ? ResolveAlias(alias) : null)

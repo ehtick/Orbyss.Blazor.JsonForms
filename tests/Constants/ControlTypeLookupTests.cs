@@ -1,7 +1,7 @@
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.Constants;
-using Orbyss.Blazor.JsonForms.Interpretation;
-using Orbyss.Components.Json.Models;
+using Orbyss.Blazor.JsonForms.Core.Constants;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Models;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Constants;
 

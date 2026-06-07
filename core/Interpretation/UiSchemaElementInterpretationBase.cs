@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Interpretation;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 /// <summary>
 /// Abstract base for all UI schema element interpretations.

@@ -1,4 +1,4 @@
-﻿using Orbyss.Components.Json.Models;
+﻿using Orbyss.Blazor.JsonForms.Core.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

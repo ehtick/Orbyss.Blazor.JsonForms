@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Interpretation.Interfaces;
 using Orbyss.Blazor.JsonForms.Interpretation;
 using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
 

@@ -3,7 +3,8 @@ using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Context;
 using Orbyss.Blazor.JsonForms.Context.Utils;
 using Orbyss.Blazor.JsonForms.Interpretation;
-using Orbyss.Blazor.JsonForms.UiSchema;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.UiSchema;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
 

@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Interpretation;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 public sealed class UiSchemaHorizontalLayoutInterpretation()
     : UiSchemaElementInterpretationBase(null)
@@ -7,7 +7,7 @@ public sealed class UiSchemaHorizontalLayoutInterpretation()
 
     public UiSchemaElementInterpretationBase[] Columns { get; private set; } = [];
 
-    internal void SetColumns(UiSchemaElementInterpretationBase[] columns)
+    public void SetColumns(UiSchemaElementInterpretationBase[] columns)
     {
         if (Columns.Length > 0)
         {

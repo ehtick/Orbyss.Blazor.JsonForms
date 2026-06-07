@@ -4,14 +4,7 @@
 {
     @if (!string.IsNullOrWhiteSpace(pageTitle))
     {
-        if (!string.IsNullOrWhiteSpace(PageTitleClass))
-        {
-            <span class="@PageTitleClass">@pageTitle</span>
-        }
-        else
-        {
-            <h3>@pageTitle</h3>
-        }
+        <div class="@FormCssClasses.PageTitle">@pageTitle</div>
     }
 
     <div class="@FormCssClasses.Form">
@@ -43,9 +36,6 @@
 
     [Parameter, EditorRequired]
     public EventCallback? OnSubmitClicked { get; set; }
-
-    [CascadingParameter(Name = "PageTitleClass")]
-    public string? PageTitleClass { get; set; }
 
     private IComponentInstance submitButtonInstance = default!;
     private string? pageTitle;

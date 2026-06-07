@@ -1,6 +1,7 @@
 using Newtonsoft.Json.Linq;
 using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Context.Models;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
 using Orbyss.Blazor.JsonForms.Context.Utils;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
@@ -423,5 +424,122 @@ public sealed class JsonFormContextArrayTests
         var isValid = form.Validate();
 
         Assert.That(isValid, Is.True);
+    }
+
+    // ── AddArrayItem(data) — dialog-based add ─────────────────────────────────
+
+    [Test]
+    public void When_AddArrayItemWithData_Then_ItemDataIsSeeded()
+    {
+        var (form, array) = BuildWithArray();
+
+        form.AddArrayItem(array.Id, JObject.Parse("""{ "street": "Baker St", "city": "London" }"""));
+
+        var addresses = (JArray)((JObject)form.GetFormData())["addresses"]!;
+        Assert.That(addresses, Has.Count.EqualTo(1));
+        Assert.That($"{addresses[0]["street"]}", Is.EqualTo("Baker St"));
+        Assert.That($"{addresses[0]["city"]}", Is.EqualTo("London"));
+        Assert.That(array.Items, Has.Length.EqualTo(1));
+    }
+
+    [Test]
+    public void When_AddArrayItemWithData_Then_SeedDataIsCloned()
+    {
+        var (form, array) = BuildWithArray();
+        var seed = JObject.Parse("""{ "street": "Baker St", "city": "London" }""");
+
+        form.AddArrayItem(array.Id, seed);
+        // Mutating the original seed must not affect the stored item.
+        seed["street"] = "Mutated";
+
+        var addresses = (JArray)((JObject)form.GetFormData())["addresses"]!;
+        Assert.That($"{addresses[0]["street"]}", Is.EqualTo("Baker St"));
+    }
+
+    // ── UpdateArrayItem — dialog-based edit ───────────────────────────────────
+
+    [Test]
+    public void When_UpdateArrayItem_Then_ItemDataIsReplaced()
+    {
+        var data = JObject.Parse("""{ "addresses": [{ "street": "Old", "city": "OldCity" }] }""");
+        var (form, array) = BuildWithArray(data: data);
+        var itemId = array.Items[0].Id;
+
+        form.UpdateArrayItem(array.Id, itemId, JObject.Parse("""{ "street": "New", "city": "NewCity" }"""));
+
+        var addresses = (JArray)((JObject)form.GetFormData())["addresses"]!;
+        Assert.That(addresses, Has.Count.EqualTo(1));
+        Assert.That($"{addresses[0]["street"]}", Is.EqualTo("New"));
+        Assert.That($"{addresses[0]["city"]}", Is.EqualTo("NewCity"));
+    }
+
+    [Test]
+    public void When_UpdateArrayItem_Then_OtherItemsAreUnchanged()
+    {
+        var data = JObject.Parse("""
+            {
+                "addresses": [
+                    { "street": "First",  "city": "A" },
+                    { "street": "Second", "city": "B" }
+                ]
+            }
+            """);
+        var (form, array) = BuildWithArray(data: data);
+        var secondId = array.Items[1].Id;
+
+        form.UpdateArrayItem(array.Id, secondId, JObject.Parse("""{ "street": "Changed", "city": "Z" }"""));
+
+        var addresses = (JArray)((JObject)form.GetFormData())["addresses"]!;
+        Assert.That($"{addresses[0]["street"]}", Is.EqualTo("First"));
+        Assert.That($"{addresses[1]["street"]}", Is.EqualTo("Changed"));
+    }
+
+    // ── GetArrayItemData — pre-fill an edit dialog ────────────────────────────
+
+    [Test]
+    public void When_GetArrayItemData_Then_ReturnsCurrentItemData()
+    {
+        var data = JObject.Parse("""{ "addresses": [{ "street": "Main St", "city": "Springfield" }] }""");
+        var (form, array) = BuildWithArray(data: data);
+        var itemId = array.Items[0].Id;
+
+        var itemData = form.GetArrayItemData(array.Id, itemId);
+
+        Assert.That(itemData, Is.Not.Null);
+        Assert.That($"{itemData!["street"]}", Is.EqualTo("Main St"));
+        Assert.That($"{itemData["city"]}", Is.EqualTo("Springfield"));
+    }
+
+    // ── OnArrayItemUpdated event ──────────────────────────────────────────────
+
+    [Test]
+    public async Task When_UpdateArrayItem_And_HandlerRegistered_Then_HandlerIsCalledWithUpdatedIndex()
+    {
+        var data = JObject.Parse("""
+            {
+                "addresses": [
+                    { "street": "First",  "city": "A" },
+                    { "street": "Second", "city": "B" }
+                ]
+            }
+            """);
+        var opts = new JsonFormContextOptions(ArraySchema, ArrayUiSchema, TranslationSchema) { Data = data };
+
+        int capturedIndex = -1;
+        opts.OnArrayItemUpdated += (_, index, _) =>
+        {
+            capturedIndex = index;
+            return Task.CompletedTask;
+        };
+
+        var form = JsonFormContextBuilder.BuildAndInstantiate(opts);
+        var array = GetArrayContext(form);
+        form.InstantiateArray(array.Id);
+        var secondId = array.Items[1].Id;
+
+        form.UpdateArrayItem(array.Id, secondId, JObject.Parse("""{ "street": "X", "city": "Y" }"""));
+        await Task.Yield();
+
+        Assert.That(capturedIndex, Is.EqualTo(1));
     }
 }

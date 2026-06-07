@@ -1,7 +1,7 @@
 using Newtonsoft.Json.Converters;
 using System.Text.Json.Serialization;
 
-namespace Orbyss.Blazor.JsonForms.UiSchema;
+namespace Orbyss.Blazor.JsonForms.Core.UiSchema;
 
 [Newtonsoft.Json.JsonConverter(typeof(StringEnumConverter))]
 [JsonConverter(typeof(JsonStringEnumConverter))]

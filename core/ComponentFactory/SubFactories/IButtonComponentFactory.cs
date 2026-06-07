@@ -1,6 +1,6 @@
-using Orbyss.Blazor.JsonForms.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
 
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory.SubFactories;
 
 /// <summary>
 /// Creates component instances for Submit, Next and Previous buttons.

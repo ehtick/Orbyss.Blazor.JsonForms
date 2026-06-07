@@ -1,10 +1,10 @@
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.Interpretation;
-using Orbyss.Components.Json.Models;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Models;
 using System.Collections.ObjectModel;
 using System.Reflection;
 
-namespace Orbyss.Blazor.JsonForms.Constants;
+namespace Orbyss.Blazor.JsonForms.Core.Constants;
 
 /// <summary>
 /// Maps <see cref="ControlType"/> enum values to their corresponding CLR types,

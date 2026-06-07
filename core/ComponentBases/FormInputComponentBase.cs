@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Components;
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.ComponentFactory;
-using Orbyss.Blazor.JsonForms.Constants;
-using Orbyss.Components.Json.Models;
+using Orbyss.Blazor.JsonForms.Core.ComponentFactory;
+using Orbyss.Blazor.JsonForms.Core.Models;
 using System.Globalization;
+using Orbyss.Blazor.JsonForms.Core.Constants;
 
-namespace Orbyss.Blazor.JsonForms.ComponentBases;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentBases;
 
 /// <summary>
 /// Abstract base class for all data-bound form input components.

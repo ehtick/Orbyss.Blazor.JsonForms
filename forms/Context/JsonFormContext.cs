@@ -1,11 +1,14 @@
 ﻿using Newtonsoft.Json.Linq;
 using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Context.Models;
-using Orbyss.Blazor.JsonForms.Context.Notifications;
-using Orbyss.Blazor.JsonForms.Constants;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
+using Orbyss.Blazor.JsonForms.Core.Constants;
 using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
 using Orbyss.Blazor.JsonForms.Utils;
-using Orbyss.Components.Json.Models;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Context.Notifications;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Models;
+
 
 namespace Orbyss.Blazor.JsonForms.Context;
 
@@ -171,12 +174,12 @@ public sealed class JsonFormContext(
         if (match is not FormControlContext control)
             return null;
 
-        var optionValue = control.Interpretation.GetOption(FormUiSchemaOptionKeys.HelperIconLabel);
+        var optionValue = control.Interpretation.GetOption(FormUiSchemaOptionKeys.HelperIconTextLabel);
         if (optionValue is null)
             return null;
 
         var literalValue = $"{optionValue}";
-        var labelInterpretation = new Interpretation.UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
+        var labelInterpretation = new UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
         return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
     }
 
@@ -191,7 +194,7 @@ public sealed class JsonFormContext(
             return null;
 
         var literalValue = $"{optionValue}";
-        var labelInterpretation = new Interpretation.UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
+        var labelInterpretation = new UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
         return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
     }
 
@@ -206,7 +209,7 @@ public sealed class JsonFormContext(
             return null;
 
         var literalValue = $"{optionValue}";
-        var labelInterpretation = new Interpretation.UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
+        var labelInterpretation = new UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
         return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
     }
 
@@ -221,7 +224,7 @@ public sealed class JsonFormContext(
             return null;
 
         var literalValue = $"{optionValue}";
-        var labelInterpretation = new Interpretation.UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
+        var labelInterpretation = new UiSchemaLabelInterpretation(Label: literalValue, I18n: literalValue);
         return translationContext.TranslateLabel(ActiveLanguage, labelInterpretation) ?? literalValue;
     }
 
@@ -233,7 +236,7 @@ public sealed class JsonFormContext(
         var rawKey = array.Interpretation.AddLabel;
         if (string.IsNullOrWhiteSpace(rawKey)) return null;
 
-        var labelInterp = new Interpretation.UiSchemaLabelInterpretation(Label: rawKey, I18n: rawKey);
+        var labelInterp = new UiSchemaLabelInterpretation(Label: rawKey, I18n: rawKey);
         return translationContext.TranslateLabel(ActiveLanguage, labelInterp) ?? rawKey;
     }
 
@@ -324,6 +327,38 @@ public sealed class JsonFormContext(
         _ = initOptions?.InvokeArrayItemAdded(arrayContext, addedIndex, this);
     }
 
+    public void AddArrayItem(Guid arrayContextId, JToken itemData)
+    {
+        var match = FindContextById(arrayContextId);
+        var arrayContext = CastArray(match);
+        dataContext.AddArrayItem(arrayContext, itemData);
+        var addedIndex = arrayContext.Items.Length - 1;
+        EnforceRules();
+        notificationHandler.Notify(JsonFormNotificationType.OnDataChanged);
+        _ = initOptions?.InvokeArrayItemAdded(arrayContext, addedIndex, this);
+    }
+
+    public void UpdateArrayItem(Guid arrayContextId, Guid arrayItemId, JToken itemData)
+    {
+        var match = FindContextById(arrayContextId);
+        var arrayContext = CastArray(match);
+        // Capture the index before the rebuild regenerates item ids.
+        var updatedIndex = arrayContext.Items
+            .Select((item, i) => (item, i))
+            .FirstOrDefault(x => x.item.Id == arrayItemId).i;
+        dataContext.UpdateArrayItem(arrayContext, arrayItemId, itemData);
+        EnforceRules();
+        notificationHandler.Notify(JsonFormNotificationType.OnDataChanged);
+        _ = initOptions?.InvokeArrayItemUpdated(arrayContext, updatedIndex, this);
+    }
+
+    public JToken? GetArrayItemData(Guid arrayContextId, Guid arrayItemId)
+    {
+        var match = FindContextById(arrayContextId);
+        var arrayContext = CastArray(match);
+        return dataContext.GetArrayItemData(arrayContext, arrayItemId);
+    }
+
     public void RemoveArrayItem(Guid arrayContextId, Guid arrayItemId)
     {
         var match = FindContextById(arrayContextId);
@@ -364,6 +399,12 @@ public sealed class JsonFormContext(
     {
         var match = FindContextById(arrayContextId);
         return initOptions?.InvokeArrayItemMoved(CastArray(match), fromIndex, toIndex, this) ?? Task.CompletedTask;
+    }
+
+    public Task NotifyArrayItemUpdated(Guid arrayContextId, int updatedIndex)
+    {
+        var match = FindContextById(arrayContextId);
+        return initOptions?.InvokeArrayItemUpdated(CastArray(match), updatedIndex, this) ?? Task.CompletedTask;
     }
 
     public void ChangeLanguage(string language)

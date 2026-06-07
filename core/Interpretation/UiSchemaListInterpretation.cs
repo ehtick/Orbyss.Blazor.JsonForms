@@ -1,6 +1,6 @@
 using Newtonsoft.Json.Linq;
 
-namespace Orbyss.Blazor.JsonForms.Interpretation;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 public class UiSchemaListInterpretation(
     UiSchemaLabelInterpretation? labelInterpretation,
@@ -47,7 +47,7 @@ public class UiSchemaListInterpretation(
         return listDetails;
     }
 
-    internal void SetListDetail(UiSchemaElementInterpretationBase details)
+    public void SetListDetail(UiSchemaElementInterpretationBase details)
     {
         if (this.listDetails is not null)
         {

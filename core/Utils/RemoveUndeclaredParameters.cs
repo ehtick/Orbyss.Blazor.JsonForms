@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using System.Reflection;
 
-namespace Orbyss.Blazor.JsonForms.Utils;
+namespace Orbyss.Blazor.JsonForms.Core.Utils;
 
 /// <summary>
 /// Strips entries from a parameter dictionary whose keys do not correspond to a

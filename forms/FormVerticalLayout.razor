@@ -4,14 +4,7 @@
 {
     @if (!string.IsNullOrWhiteSpace(verticalLayoutTitle))
     {
-        if (!string.IsNullOrWhiteSpace(GroupTitleClass))
-        {
-            <span class="@GroupTitleClass">@verticalLayoutTitle</span>
-        }
-        else
-        {
-            <h4 style="margin-top:20px;margin-left:20px">@verticalLayoutTitle</h4>
-        }
+        <div class="@FormCssClasses.GroupTitle">@verticalLayoutTitle</div>
     }
 
     @foreach (var row in LayoutContext.Rows)
@@ -37,9 +30,6 @@
 
     [Parameter, EditorRequired]
     public FormVerticalLayoutContext? LayoutContext { get; set; }
-
-    [CascadingParameter(Name = "GroupTitleClass")]
-    public string? GroupTitleClass { get; set; }
 
     private void OnLanguageChanged()
     {

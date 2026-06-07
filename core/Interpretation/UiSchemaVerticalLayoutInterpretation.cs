@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Interpretation;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 public sealed class UiSchemaVerticalLayoutInterpretation(UiSchemaLabelInterpretation? labelInterpretation)
     : UiSchemaElementInterpretationBase(labelInterpretation)
@@ -7,7 +7,7 @@ public sealed class UiSchemaVerticalLayoutInterpretation(UiSchemaLabelInterpreta
 
     public UiSchemaElementInterpretationBase[] Rows { get; private set; } = [];
 
-    internal void SetRows(UiSchemaElementInterpretationBase[] rows)
+    public void SetRows(UiSchemaElementInterpretationBase[] rows)
     {
         if (Rows.Length > 0)
         {

@@ -1,9 +1,8 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
 
-namespace Orbyss.Blazor.JsonForms.Context.Models;
+namespace Orbyss.Blazor.JsonForms.Core.Context.Models;
 
 /// <summary>
 /// Context for an <c>ArrayLayout</c> element. Manages the ordered list of
@@ -25,16 +24,16 @@ public sealed class FormArrayContext(
 
     // ── Internal mutation API (called by JsonFormDataContext) ─────────────────
 
-    internal void AddItem(FormArrayItemContext item) => items.Add(item);
+    public void AddItem(FormArrayItemContext item) => items.Add(item);
 
     /// <summary>Removes all item contexts (used before a full rebuild after remove / move).</summary>
-    internal void ClearItems() => items.Clear();
+    public void ClearItems() => items.Clear();
 
     /// <summary>
     /// Removes the item with the given id and returns its former index,
     /// so the caller knows which JArray index to delete.
     /// </summary>
-    internal int RemoveItemById(Guid itemId)
+    public int RemoveItemById(Guid itemId)
     {
         for (var i = 0; i < items.Count; i++)
         {

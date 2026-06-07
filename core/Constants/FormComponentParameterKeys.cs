@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Constants;
+namespace Orbyss.Blazor.JsonForms.Core.Constants;
 
 /// <summary>
 /// Well-known Blazor parameter names used by the engine when wiring component instances.

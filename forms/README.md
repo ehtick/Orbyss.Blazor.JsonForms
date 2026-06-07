@@ -1,630 +1,275 @@
 # 📦 Orbyss.Blazor.JsonForms
 
-**A fully .NET-native implementation of the [JsonForms.io](https://jsonforms.io) standard for schema-driven forms in Blazor.**  
-No Angular, no web components — just C#, JSON Schema, and flexible Blazor architecture.
+**A fully .NET-native implementation of the [JsonForms.io](https://jsonforms.io) standard for schema-driven forms in Blazor.**
+No Angular, no web components — just C#, JSON Schema, and a UI-agnostic Blazor architecture.
+
+Render rich, validated, localised forms from three JSON documents — a data
+schema, a layout schema, and a translation schema — and plug in **any** Blazor
+component library to draw the inputs.
+
+> 📖 **Importable skills** teach an AI assistant the exact, full capability set:
+> [schema authoring](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-schema-authoring)
+> (generate JSON/UI/translation schemas) and
+> [custom components](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-custom-components)
+> (build your own renderer + theming). Upgrading? See the
+> [v1→v2 migration skill](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-v1-migration).
 
 ---
 
-## 🎯 What is this?
+## What you get
 
-This is the **UI-agnostic core framework** for rendering dynamic forms from JSON Schema in .NET. It handles:
+- ✅ Form generation from three schemas (data, layout, translations)
+- ✅ Automatic control-type resolution from JSON Schema
+- ✅ Localisation, validation, and conditional rules (Show / Hide / Enable / Disable)
+- ✅ Multi-page (wizard) forms, inline array repeaters, list-with-detail, action buttons
+- ✅ Theming through CSS custom properties — no component edits
+- ✅ A clean, three-layer parameter-binding contract for custom components
 
-- Form generation from three schemas (data, layout, translations)
-- Schema interpretation and control type resolution
-- Localisation via a translation schema
-- Layout, validation, rules, and data management
+This package is the **engine**. For building a UI layer against contracts only,
+reference [`Orbyss.Blazor.JsonForms.Core`](https://www.nuget.org/packages/Orbyss.Blazor.JsonForms.Core).
+Targets **net8.0** and **net10.0**.
 
-You plug in a **UI layer** (a `IFormComponentInstanceProvider` implementation). This library is the form engine — you bring the renderer.
-
----
-
-## 🚀 Available UI Integrations
-
-Use one of our ready-to-go UI packages:
+### Ready-made UI integrations
 
 - 🧩 [Orbyss.Blazor.Syncfusion.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms)
 - 🎨 [Orbyss.Blazor.MudBlazor.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.MudBlazor.JsonForms)
 
-Or build your own — for example when you have your own Blazor component system or use **Radzen**, **Telerik**, or **Fluent UI**.
+Or build your own — see [Bring your own UI](#bring-your-own-ui).
 
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 dotnet add package Orbyss.Blazor.JsonForms
 ```
 
-Then reference a UI implementation package or build your own.
+Include the base stylesheet (provides the default theme):
+
+```html
+<link rel="stylesheet" href="_content/Orbyss.Blazor.JsonForms/orbyss-forms.css" />
+```
+
+Register services. With a UI integration package this is usually one call; with
+your own components, assign the factory slots:
+
+```csharp
+builder.Services.AddJsonForms(configureFactories: o =>
+{
+    o.ConfigureControls = controls =>
+    {
+        controls.TextInputComponentType    = typeof(MyTextBox);
+        controls.NumberInputComponentType  = typeof(MyNumberInput);
+        controls.BooleanInputComponentType = typeof(MyCheckbox);
+        controls.DropdownComponentType     = typeof(MyDropdown);
+        controls.MultiSelectComponentType  = typeof(MyMultiSelect);
+        controls.DateOnlyInputComponentType= typeof(MyDatePicker);
+        // …assign the slots you use
+    };
+    o.ConfigureButtons      = b => b.SubmitButtonComponentType = typeof(MyButton);
+    o.ConfigureActionButtons= a => a.ActionButtonComponentType = typeof(MyActionButton);
+    o.ConfigureArrayLayout  = a => a.ArrayLayoutComponentType  = typeof(MyArrayRepeater);
+});
+```
 
 ---
 
-## ⚡ Quick Start
+## Quick start
 
 ```razor
-<JsonForm InitOptions="@options" />
+<JsonForm InitOptions="@options" OnSubmit="HandleSubmit" />
 
 @code {
-    JsonFormContextInitOptions options = new(
-        jsonSchema,
-        uiSchema,
-        translationSchema
-    );
+    private JsonFormContextOptions options = new(
+        jsonSchemaJson,
+        uiSchemaJson,
+        translationSchemaJson);
+
+    private Task HandleSubmit(JToken formData) => Save(formData);
 }
 ```
 
-> 💡 `JsonFormContext` can be provided as a `[Parameter]` or registered as a **Transient** DI service.  
-> 💡 `IFormComponentInstanceProvider` can be provided as a `[Parameter]` or as a DI service.  
-> 💡 The following cascading values are supported: `Language`, `Disabled`, `ReadOnly`.
+- `JsonFormContextOptions` accepts the three schemas as **strings** or parsed
+  objects (`JSchema`, `FormUiSchema`, `TranslationSchema`), plus optional seed
+  `Data`, initial `Language`, and `Disabled` / `ReadOnly`.
+- The form context resolves from a `FormContext` `[Parameter]`, a **transient**
+  DI registration, or the built-in builder.
+- Cascading values `Language`, `Disabled`, `ReadOnly` are honoured.
 
 ---
 
-## 🔄 How the Framework Works
-
-Forms are driven by three schemas:
+## The three schemas
 
 | Schema | Purpose |
 |---|---|
-| **JSON Schema** | Defines the data structure — types, constraints, required fields |
-| **UI Schema** | Controls layout, grouping, options, and rules |
-| **Translation Schema** | Provides localised labels, error messages, and enum display values |
-
-### Full Example
+| **JSON Schema** | Data structure — types, `enum`, `format`, constraints, `required`. Drives control-type resolution. |
+| **UI Schema** | Layout, grouping, per-field options, conditional rules. |
+| **Translation Schema** | Localised labels, helper text, enum display values, error messages. |
 
 ```json
 // JSON Schema
 {
-    "type": "object",
-    "properties": {
-        "firstName": { "type": "string", "minLength": 2, "maxLength": 50 },
-        "surname":   { "type": "string" },
-        "role":      { "type": "string", "enum": ["admin", "user", "guest"] }
-    },
-    "required": ["firstName"]
+  "type": "object",
+  "properties": {
+    "firstName": { "type": "string", "minLength": 2 },
+    "role":      { "type": "string", "enum": ["admin", "user", "guest"] }
+  },
+  "required": ["firstName"]
 }
 ```
 
 ```json
 // UI Schema
 {
-    "type": "VerticalLayout",
-    "elements": [
-        {
-            "type": "Control",
-            "scope": "#/properties/firstName",
-            "options": {
-                "helperIconLabel": "firstName.helper",
-                "cssClass": "highlighted-field"
-            }
-        },
-        {
-            "type": "Control",
-            "scope": "#/properties/role",
-            "options": {
-                "helperIconLabel": "Select the role that matches the user's access level."
-            }
-        },
-        {
-            "type": "Control",
-            "scope": "#/properties/surname",
-            "options": { "hidden": true },
-            "rule": {
-                "effect": "Show",
-                "condition": {
-                    "scope": "#/properties/firstName",
-                    "schema": { "minLength": 2 }
-                }
-            }
-        }
-    ]
+  "type": "VerticalLayout",
+  "elements": [
+    { "type": "Control", "scope": "#/properties/firstName",
+      "options": { "helperIconTextLabel": "firstName.helper" } },
+    { "type": "Control", "scope": "#/properties/role" }
+  ]
 }
 ```
 
 ```json
 // Translation Schema
 {
-    "resources": {
-        "en": {
-            "translation": {
-                "firstName": {
-                    "label": "First Name",
-                    "error": { "minLength": "Must be at least 2 characters" }
-                },
-                "surname":  { "label": "Surname" },
-                "role":     { "label": "Role" },
-                "firstName.helper": { "label": "Enter the user's legal first name." }
-            }
-        },
-        "nl": {
-            "translation": {
-                "firstName": {
-                    "label": "Voornaam",
-                    "error": { "minLength": "Moet minimaal 2 tekens bevatten" }
-                },
-                "surname":  { "label": "Achternaam" },
-                "role":     { "label": "Rol" },
-                "firstName.helper": { "label": "Voer de wettelijke voornaam in." }
-            }
-        }
-    }
+  "resources": {
+    "en": { "translation": {
+      "firstName": { "label": "First Name", "error": { "minLength": "Min 2 characters" } },
+      "role":      { "label": "Role" },
+      "firstName.helper": { "label": "Enter the legal first name." }
+    }}
+  }
 }
 ```
 
----
-
-## 🗂 Known UI Schema Options
-
-These option keys are defined in `FormUiSchemaOptionKeys` and are understood by the core engine:
-
-| Option key | Applies to | Type | Description |
-|---|---|---|---|
-| `readonly` | Control | `bool` | Makes the control read-only |
-| `disabled` | Control | `bool` | Disables the control |
-| `hidden` | Control | `bool` | Hides the control initially (can be revealed by a rule) |
-| `cssClass` | Control | `string` | One or more CSS classes applied to the component. Merged with any programmatically assigned class — schema class is appended last |
-| `helperIconLabel` | Control | `string` | Text shown in a helper icon tooltip. Resolved through the translation context: treated as an i18n key first, falls back to the literal string |
-| `helperTextLabel` | Control | `string` | Helper text shown below the control. Resolved via translation context. Schema value overwrites any programmatically set helper text. |
-| `enumItemOptions` | Control | `object` | Per-enum metadata keyed by enum value. Each entry may contain a `helperText` property. |
-| `prefixLabel` | Control | `string` | Prefix prepended to numeric display values (e.g. `€`). Resolved via translation context. Schema wins. |
-| `suffixLabel` | Control | `string` | Suffix appended to numeric display values (e.g. `m`, `kg`). Resolved via translation context. Schema wins. |
-| `detail` | ListWithDetail | `object` | The UI schema for a list item's detail view |
-
-> 💡 Custom options beyond these can still be read at runtime via `control.Interpretation.GetOption("myKey")` in your `IFormComponentInstanceProvider` implementation.
-
-### `helperIconLabel` — translation resolution
-
-The value is resolved just like a label. Given `"helperIconLabel": "myKey"`:
-
-1. The engine looks for a translation section named `"myKey"` and returns its `label` property.
-2. If no match is found the literal string `"myKey"` is used as-is.
-
-This means you can freely mix i18n keys and plain text in the same form.
-
-### `cssClass` — merging behaviour
-
-If a control has both a schema-defined class and a programmatically assigned class (set on the component instance by your `IFormComponentInstanceProvider`), the two are **appended** by default:
-
-```
-final class = "{programmaticClass} {schemaClass}"
-```
-
-To **replace** the default class entirely, prefix the value with `!`:
-
-```json
-"options": {
-    "cssClass": "!my-full-override-class"
-}
-```
-
-This strips the programmatic default and uses only `my-full-override-class`. Useful when the default class conflicts with your design system. The `!` is stripped from the final output.
+The data schema decides the control type automatically — `string` → text,
+`string`+`enum` → dropdown, `number`/`integer` → numeric, `boolean` → checkbox,
+`string`+`format:date` → date picker, array of string-enum → multi-select. Full
+rules: [schema-authoring skill](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-schema-authoring).
 
 ---
 
-## 🎨 CSS Variables & Default Classes
+## UI-schema capabilities
 
-The engine ships with `orbyss-forms.css` which defines CSS custom properties you can override to theme the form without touching component code.
-
-### Including the stylesheet
-
-```html
-<link rel="stylesheet" href="_content/Orbyss.Blazor.JsonForms/orbyss-forms.css" />
-```
-
-### Overriding variables
-
-Set any variable in your own CSS — no need to include the base stylesheet if you define them all:
-
-```css
-:root {
-    /* Brand / theme */
-    --orbyss-form-primary:         #e91e63;
-    --orbyss-form-primary-text:    #ffffff;
-    --orbyss-form-error:           #c0392b;
-    --orbyss-form-border-radius:   8px;
-    --orbyss-form-font-family:     'Inter', sans-serif;
-    --orbyss-form-label-font-size: 0.8125rem;
-    --orbyss-form-input-height:    3rem;
-
-    /* Spacing — set this one value and all layout gaps follow */
-    --orbyss-form-spacing:         1.25rem;
-
-    /* Layout gaps — each defaults to --orbyss-form-spacing if not set */
-    --orbyss-form-row-gap:         1.25rem;   /* vertical gap between rows */
-    --orbyss-form-column-gap:      0.75rem;   /* horizontal gap between columns */
-    --orbyss-form-button-gap:      1rem;      /* gap + top-margin for button row */
-}
-```
-
-All variable names are exposed as string constants in `FormCssVariables` so you can reference them safely from C# if needed.
-
-### Layout CSS classes
-
-Layout containers are plain `<div>` elements — no Syncfusion dependency. All classes come from `FormCssClasses`:
-
-| Class | Value | Rendered by |
-|---|---|---|
-| `FormCssClasses.Form` | `orbyss-form` | Outer page wrapper (`FormSinglePage`) |
-| `FormCssClasses.Row` | `orbyss-form-row` | Each row in a vertical layout |
-| `FormCssClasses.Column` | `orbyss-form-column` | Each column in a horizontal layout |
-| `FormCssClasses.ButtonRow` | `orbyss-form-button-row` | Row containing submit / nav buttons |
-| `FormCssClasses.ButtonColumn` | `orbyss-form-button-column` | Column wrapping each button |
-| `FormCssClasses.ButtonRowSpaceBetween` | `orbyss-form-button-row--space-between` | Modifier for stepper prev + next layout |
-
-### Default CSS classes on control instances
-
-Each control component instance ships with a default `Class` value from `FormCssClasses`:
-
-| Class constant | Value | Applied to |
-|---|---|---|
-| `FormCssClasses.TextInput` | `orbyss-form-text-input` | Text inputs |
-| `FormCssClasses.NumberInput` | `orbyss-form-number-input` | Integer and number inputs |
-| `FormCssClasses.Dropdown` | `orbyss-form-dropdown` | Dropdown and multi-select |
-| `FormCssClasses.BooleanInput` | `orbyss-form-boolean-input` | Checkbox / switch |
-| `FormCssClasses.Slider` | `orbyss-form-slider` | Numeric sliders |
-| `FormCssClasses.EnumBlocks` | `orbyss-form-enum-blocks` | Enum block selectors |
-| `FormCssClasses.ActionButton` | `orbyss-form-action-button` | Action buttons |
-
-Use `cssClass` in your UI schema to append, or `!cssClass` to replace.
-
----
-
-## 🔔 Reacting to Value Changes
-
-`JsonFormContextInitOptions` exposes two multi-subscriber events that fire during the form lifecycle:
-
-| Event | When it fires |
+| Feature | `type` / option |
 |---|---|
-| `OnControlValueChanged` | After a control's committed value changes (blur, selection, toggle) |
-| `OnControlInputChanged` | On every raw input event (e.g. each keystroke in a text field) |
+| Layouts | `VerticalLayout`, `HorizontalLayout`, `Group` |
+| Multi-page (wizard) | `Categorization` + `Category` |
+| Conditional state | `rule` → `Show` / `Hide` / `Enable` / `Disable` |
+| Inline action button | `ActionButton` + `options.actionKey` (+ `RegisterAction`) |
+| Inline array repeater | `ArrayLayout` |
+| List with detail editor | `ListWithDetail` + `options.detail` |
+| Read-only / disabled / hidden | `options.readonly` / `disabled` / `hidden` |
+| Helper text / tooltip | `options.helperTextLabel` / `helperIconTextLabel` |
+| Numeric prefix / suffix | `options.prefixLabel` / `suffixLabel` |
+| Enum item helper text | `options.enumItemOptions` |
+| Per-field component override | `options.component` (alias) |
+| Per-field Blazor parameters | `options.parameters` |
+| CSS class | `options.cssClass` (append, or `!` to replace) |
 
-Both use the same delegate:
+Each label-like option (`helperTextLabel`, `helperIconTextLabel`, `prefixLabel`,
+`suffixLabel`, `addLabel`, plus `label`/`i18n`) is resolved as a translation key
+first, then falls back to its literal string.
+
+---
+
+## Reacting to changes
+
+Subscribe on the options object before passing it to `<JsonForm/>`:
 
 ```csharp
-delegate Task FormControlEventHandler(FormControlContext control, IJsonFormContext form)
-```
-
-### Subscribing
-
-**`OnControlValueChanged`** — fires once per committed change (blur, selection, toggle):
-
-```csharp
-var options = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
+var options = new JsonFormContextOptions(jsonSchema, uiSchema, translationSchema);
 
 options.OnControlValueChanged += async (control, form) =>
 {
-    // Check which control changed using its interpretation or custom options
-    var addressScope = $"{control.Interpretation.GetOption("addressScope")}";
-    if (string.IsNullOrWhiteSpace(addressScope)) return;
-
-    // Look up the target control by data path and write the result back
-    var addressCtx = form.FindControl(c => c.AbsoluteDataJsonPath == addressScope);
-    if (addressCtx is null) return;
-
-    var address = await _addressService.LookupAsync($"{form.GetValue(control.Id)}");
-    form.UpdateValue(addressCtx.Id, JToken.FromObject(address));
+    if (control.AbsoluteDataJsonPath != "$.postcode") return;
+    var address = await lookup.ByPostcodeAsync($"{form.GetValue(control.Id)}");
+    var cityCtx = form.FindControl(c => c.AbsoluteDataJsonPath == "$.city");
+    if (cityCtx is not null) form.UpdateValue(cityCtx.Id, JToken.FromObject(address.City));
 };
-```
 
-**`OnControlInputChanged`** — fires on every raw input event (e.g. each keystroke). Use this for live search, character counters, or instant feedback. Only fires for input-type controls (text fields); selection controls such as dropdowns use `OnControlValueChanged`:
-
-```csharp
-options.OnControlInputChanged += async (control, form) =>
+options.RegisterAction("calculate", async form =>
 {
-    // Example: live search — fire a query on every keystroke
-    if (control.AbsoluteDataJsonPath == "$.searchQuery")
-    {
-        var results = await _searchService.SearchAsync($"{form.GetValue(control.Id)}");
-        var resultsCtx = form.FindControl(c => c.AbsoluteDataJsonPath == "$.searchResults");
-        if (resultsCtx is not null)
-            form.UpdateValue(resultsCtx.Id, JToken.FromObject(results));
-    }
-};
-```
-
-Multiple subscribers are supported on both events — just `+=` again:
-
-```csharp
-options.OnControlValueChanged += LogValueChange;
-options.OnControlValueChanged += TriggerPremiumRecalculation;
-```
-
-### Disposing handlers
-
-The events live on `JsonFormContextInitOptions`, which you own. If your handler captures a short-lived object (e.g. `this` in a Blazor component) and `initOptions` outlives it, unsubscribe in `Dispose`:
-
-```csharp
-public void Dispose()
-{
-    options.OnControlValueChanged -= HandleValueChanged;
-}
-```
-
-In typical Blazor usage, `initOptions` is a field on the same component that subscribes to it. Both go out of scope together when the component is disposed, so no explicit `-=` is needed.
-
-### Debouncing
-
-`OnControlInputChanged` fires on every keystroke. Debouncing — if needed — is the caller's responsibility. The engine does not impose any delay.
-
-### Finding and updating controls
-
-`IJsonFormContext` exposes two search methods:
-
-```csharp
-// First match, or null
-FormControlContext? ctx = form.FindControl(c => c.AbsoluteDataJsonPath == "$.street");
-
-// All matches
-IEnumerable<FormControlContext> ctxs = form.FindControls(c => c.AbsoluteDataJsonPath.StartsWith("$.address"));
-```
-
-Once you have a context, write a new value using its `Id`:
-
-```csharp
-form.UpdateValue(ctx.Id, JToken.FromObject("Baker Street"));
-```
-
-The form re-evaluates rules and refreshes all affected components automatically after `UpdateValue`.
-
----
-
-## 🔘 ActionButton — inline action elements
-
-`ActionButton` is a first-class UI schema element type that renders a button anywhere in the form layout. When clicked it invokes a registered async handler that receives the full form context, making it ideal for mid-form actions like premium calculation, address lookup, or search.
-
-### UI schema
-
-```json
-{
-    "type": "ActionButton",
-    "label": "calculateButton",
-    "options": {
-        "actionKey": "calculate-premium"
-    },
-    "rule": {
-        "effect": "Disable",
-        "condition": {
-            "scope": "#/properties/premium",
-            "schema": { "type": "number" }
-        }
-    }
-}
-```
-
-- **`label`** — resolved through the translation context (i18n key or literal string)
-- **`actionKey`** — must match a key registered via `RegisterAction`
-- **`rule`** — optional; supports all standard effects (`Show`, `Hide`, `Enable`, `Disable`) evaluated by the same rule engine as controls
-
-### Registering an action handler
-
-```csharp
-var options = new JsonFormContextInitOptions(jsonSchema, uiSchema, translationSchema);
-
-options.RegisterAction("calculate-premium", async form =>
-{
-    var data = form.GetFormData();
-    var premium = await _premiumService.CalculateAsync(data);
-
-    var ctx = form.FindControl(c => c.AbsoluteDataJsonPath == "$.premium");
-    if (ctx is not null)
-        form.UpdateValue(ctx.Id, JToken.FromObject(premium));
+    var ctx = form.FindControl(c => c.AbsoluteDataJsonPath == "$.total");
+    if (ctx is not null) form.UpdateValue(ctx.Id, JToken.FromObject(Compute(form.GetFormData())));
 });
 ```
 
-Calling `RegisterAction` with the same key a second time replaces the previous handler. After the handler updates values, the form re-evaluates rules and refreshes all affected components automatically.
+Events: `OnControlValueChanged` (committed change), `OnControlInputChanged` (per
+keystroke), and `OnArrayItemAdded` / `OnArrayItemRemoved` / `OnArrayItemMoved` /
+`OnArrayItemUpdated`. All are multi-subscriber (`+=`). `UpdateValue` re-runs rules
+and refreshes automatically.
 
-### `IFormComponentInstanceProvider`
-
-UI implementations must implement `GetActionButton`:
-
-```csharp
-ActionButtonFormComponentInstanceBase GetActionButton(FormActionButtonContext actionButton);
-```
-
-`ActionButtonFormComponentInstanceBase` exposes `Label` (string?), `Disabled` (bool), and `OnClick` (EventCallback). These are set by the engine — your component just needs to declare matching `[Parameter]` properties and render a button.
+**Array dialog editing** is the UI provider's job — the `ArrayLayout` component
+owns its add/edit affordances. Land a dialog's result with
+`form.AddArrayItem(id, itemData)` (create), `form.GetArrayItemData(id, itemId)` +
+`form.UpdateArrayItem(id, itemId, itemData)` (edit), or `form.RemoveArrayItem(id,
+itemId)`. See the
+[custom-components skill](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-custom-components).
 
 ---
 
-## 🛠 Implementing Your Own UI Layer
+## Theming
 
-### 1. Implement `IFormComponentInstanceProvider`
+Override CSS custom properties — no component code:
 
-```csharp
-public interface IFormComponentInstanceProvider
-{
-    InputFormComponentInstanceBase GetInputField(IJsonFormContext context, FormControlContext control);
-    IFormComponentInstance GetGridRow(IFormElementContext? row);
-    IFormComponentInstance GetGridColumn(IFormElementContext? column);
-    IFormComponentInstance GetGrid(IJsonFormContext? form, FormPageContext? page);
-    ButtonFormComponentInstanceBase GetButton(FormButtonType type, IJsonFormContext? form);
-    NavigationFormComponentInstanceBase GetNavigation(IJsonFormContext formContext);
-    ListFormComponentInstanceBase GetList(FormListContext? list = null);
-    ListItemFormComponentInstance GetListItem(IFormElementContext? listItem = null);
+```css
+:root {
+  --orbyss-form-primary:       #e91e63;
+  --orbyss-form-error:         #c0392b;
+  --orbyss-form-border-radius: 8px;
+  --orbyss-form-spacing:       1.25rem;
 }
 ```
 
-`GetInputField` is the most important method — it maps a control context to a component instance:
+Variable and class names are also C# constants (`FormCssVariables`,
+`FormCssClasses`). Append a class with `"cssClass": "x"`, replace the default
+with `"cssClass": "!x"`. Full catalogue:
+[custom-components skill](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-custom-components).
 
-```csharp
-public virtual InputFormComponentInstanceBase GetInputField(IJsonFormContext context, FormControlContext control)
-{
-    return control.Interpretation.ControlType switch
-    {
-        ControlType.Boolean         => GetBooleanField(control),
-        ControlType.String          => GetTextField(control),
-        ControlType.Enum            => GetDropDownField(control),
-        ControlType.EnumList        => GetMultiDropDownField(control),
-        ControlType.DateTime        => GetDateTimeField(control),
-        ControlType.DateOnly        => GetDateOnlyField(control),
-        ControlType.DateOnlyUtcTicks  => GetDateUtcTicksField(control),
-        ControlType.DateTimeUtcTicks  => GetDateTimeUtcTicksField(control),
-        ControlType.Integer         => GetIntegerField(control),
-        ControlType.Number          => GetNumberField(control),
-        _ => throw new NotSupportedException($"Cannot create an input field for type '{control.Interpretation.ControlType}'")
-    };
-}
-```
+---
 
-### 2. Create your Razor component
+## Bring your own UI
 
-Your component receives a standard set of parameters automatically populated by the engine:
+The UI layer maps each resolved element to a Blazor component via factory slots.
+Three rules cover most of it:
+
+1. **Input components implement `IFormComponent`** — inherit
+   `FormInputComponentBase<TValue>` to get it (and all standard parameters) free.
+2. **Declare `Value` and invoke `OnValueChanged`** on commit — that's how state
+   flows back.
+3. **Don't set engine-owned parameters** (`Value`, `ValueChanged`, `Checked`,
+   `CheckedChanged`, `Values`, `ValuesChanged`) — binding is wired automatically.
 
 ```razor
-@* MyTextInput.razor *@
+@* MyTextBox.razor *@
+@inherits FormInputComponentBase<string?>
 
-<input value="@Value"
-       placeholder="@Label"
-       disabled="@(Disabled || ReadOnly)"
-       class="@Class"
-       @oninput="e => OnValueChanged.InvokeAsync(e.Value?.ToString())" />
+<input value="@Value" class="@Class" disabled="@(Disabled || ReadOnly)"
+       @onchange="e => OnValueChanged.InvokeAsync(e.Value?.ToString())" />
 
-@if (!string.IsNullOrWhiteSpace(HelperIconText))
-{
-    <span class="helper-icon" title="@HelperIconText">ℹ️</span>
-}
-
-@if (!string.IsNullOrWhiteSpace(ErrorHelperText))
-{
-    <div class="error">@ErrorHelperText</div>
-}
-else if (!string.IsNullOrWhiteSpace(HelperText))
-{
-    <div class="helper"><i>@HelperText</i></div>
-}
-
-@code {
-    [Parameter] public string?  Label          { get; set; }
-    [Parameter] public string?  Class          { get; set; }
-    [Parameter] public bool     Disabled        { get; set; }
-    [Parameter] public bool     ReadOnly        { get; set; }
-    [Parameter] public string?  ErrorHelperText { get; set; }
-    [Parameter] public string?  HelperText      { get; set; }
-    [Parameter] public string?  HelperIconText  { get; set; }
-    [Parameter] public string?  Value           { get; set; }
-    [Parameter] public EventCallback<string?> OnValueChanged { get; set; }
-}
+@if (!string.IsNullOrWhiteSpace(ErrorHelperText)) { <div class="err">@ErrorHelperText</div> }
 ```
 
-#### Standard parameters on `InputFormComponentInstanceBase`
-
-| Parameter | Type | Set by |
-|---|---|---|
-| `Label` | `string?` | Engine (translated) |
-| `Disabled` | `bool` | Engine / UI schema |
-| `ReadOnly` | `bool` | Engine / UI schema |
-| `ErrorHelperText` | `string?` | Engine (validation) |
-| `HelperText` | `string?` | Your component instance (overwritten by `helperTextLabel` schema option if set) |
-| `HelperIconText` | `string?` | Engine (from `helperIconLabel` option, translated) |
-| `Class` | `string?` | Engine (merged from `cssClass` option + programmatic) |
-| `Style` | `string?` | Your component instance |
-| `Value` | `object?` | Engine (typed per control type) |
-
-#### Value / callback types per control type
-
-The `Value` and `OnValueChanged` types must match exactly:
-
-| Control type | Value type | EventCallback type |
-|---|---|---|
-| `String` | `string?` | `EventCallback<string?>` |
-| `Boolean` | `bool` | `EventCallback<bool>` |
-| `Integer` | `int?` | `EventCallback<int?>` |
-| `Number` | `double?` | `EventCallback<double?>` |
-| `Enum` | `string` | `EventCallback<string>` |
-| `EnumList` | `IEnumerable<string>` | `EventCallback<IEnumerable<string>>` |
-| `DateTime` | `DateTime?` | `EventCallback<DateTime?>` |
-| `DateOnly` | `DateOnly?` | `EventCallback<DateOnly?>` |
-| `DateTimeUtcTicks` | `DateTimeUtcTicks?` | `EventCallback<DateTimeUtcTicks?>` |
-| `DateOnlyUtcTicks` | `DateUtcTicks?` | `EventCallback<DateUtcTicks?>` |
-
-> ⚠️ If `OnValueChanged` is never invoked, the form state will not update.
-
-### 3. Create a component instance class
-
-The component instance is the contract between your provider and your Razor component. When the built-in parameters are enough, use a built-in instance directly:
-
-```csharp
-public virtual ListItemFormComponentInstance GetListItem(IFormElementContext? listItem = null)
-{
-    return new ListItemFormComponentInstance<MyListItem>();
-}
-```
-
-#### `UiSchemaControlInterpretation` — numeric constraints
-
-`Minimum` (`double?`) and `Maximum` (`double?`) are automatically parsed from the JSON Schema `minimum`/`maximum` keywords and exposed on `control.Interpretation.Minimum` / `control.Interpretation.Maximum`. Use these in your provider to configure range-based components such as sliders.
-
-#### Component instance hierarchy
-
-- `FormComponentInstanceBase` — base for all instances
-  - `InputFormComponentInstanceBase` — standard input fields (label, value, disabled, read-only, errors, helper text)
-    - `NumericInputFormComponentInstanceBase` — adds `PrefixText` and `SuffixText`; schema options `prefixLabel`/`suffixLabel` overwrite these at render time
-    - `DropdownFormComponentInstanceBase` — enum fields (items, multi-select, clearable, searchable)
-
-For components with additional parameters, derive from the appropriate base and override `GetFormInputParameters`:
-
-```csharp
-// Component
-@* MySwitch.razor *@
-<MySwitch OnLabel="@OnLabel" OffLabel="@OffLabel" ... />
-
-[Parameter] public string? OnLabel  { get; set; }
-[Parameter] public string? OffLabel { get; set; }
-
-// Component instance
-public class MySwitchInstance : InputFormComponentInstance<MySwitch>
-{
-    public MySwitchInstance() : base(token => (bool?)token) { }
-
-    public string? OnLabel  { get; set; }
-    public string? OffLabel { get; set; }
-
-    protected override IDictionary<string, object?> GetFormInputParameters()
-    {
-        return new Dictionary<string, object?>
-        {
-            [nameof(MySwitch.OnLabel)]  = OnLabel,
-            [nameof(MySwitch.OffLabel)] = OffLabel
-        };
-    }
-}
-```
-
-### 4. Return your instance from the provider
-
-```csharp
-protected virtual InputFormComponentInstanceBase GetBooleanField(FormControlContext control)
-{
-    // Custom options can drive which component is rendered
-    var boolType = $"{control.Interpretation.GetOption("custom-bool-type")}";
-
-    return boolType == "switch"
-        ? new MySwitchInstance { OnLabel = "Yes", OffLabel = "No" }
-        : new MyCheckboxInstance();
-}
-```
+Parameters flow in three layers (engine auto-wire → factory `SetParameter` →
+UI-schema `parameters`), then undeclared parameters are stripped. Factories are
+**transient** (one set per form), so a single form can override slots/parameters/
+aliases via `<JsonForm ConfigureFactories="…">` without affecting other forms. The
+complete contract — auto-wired parameters per slot, custom `JToken` conversion,
+aliases, per-form configuration, multi-page navigation, lists, and arrays — is in
+the [custom-components skill](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-custom-components).
 
 ---
 
-## 📄 License
-MIT License — © Orbyss
+## License
 
-## 🔗 Links
-- 🌍 **Website**: [https://orbyss.io](https://orbyss.io)
-- 📦 **NuGet**: [Orbyss.Blazor.JsonForms](https://www.nuget.org/packages/Orbyss.Blazor.JsonForms)
-- 🧑‍💻 **GitHub**: [https://github.com/Orbyss-io](https://github.com/orbyss-io)
-- 📝 **License**: [MIT](./LICENSE)
-- [JsonForms.io](https://jsonforms.io/)
-- [Syncfusion UI integration](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms)
-- [MudBlazor UI integration](https://www.nuget.org/packages/Orbyss.Blazor.MudBlazor.JsonForms)
+MIT License — © Orbyss.
 
-## 🤝 Contributing
+## Links
 
-Contributions are welcome — bug fixes, improvements, documentation, or ideas.  
-Fork the repo, create a branch, and open a pull request.
-
-- Write clean, readable code
-- Keep PRs focused and descriptive
-- Open issues for larger features or discussions
-
----
-
-⭐️ If you find this useful, [give us a star](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/stargazers) and help spread the word!
+- 🌍 [orbyss.io](https://orbyss.io)
+- 🧑‍💻 [GitHub](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms) · Skills: [schema authoring](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-schema-authoring) · [custom components](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-custom-components) · [v1→v2 migration](https://github.com/orbyss-io/Orbyss.Blazor.JsonForms/tree/main/skills/orbyss-jsonforms-v1-migration)
+- 📦 [Core package](https://www.nuget.org/packages/Orbyss.Blazor.JsonForms.Core)
+- 🔌 [Syncfusion UI](https://www.nuget.org/packages/Orbyss.Blazor.Syncfusion.JsonForms) · [MudBlazor UI](https://www.nuget.org/packages/Orbyss.Blazor.MudBlazor.JsonForms)
+- 📐 [JsonForms.io](https://jsonforms.io/)

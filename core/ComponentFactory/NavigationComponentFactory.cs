@@ -1,9 +1,10 @@
-using Orbyss.Blazor.JsonForms.Constants;
-using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Utils;
+using Orbyss.Blazor.JsonForms.Core.ComponentFactory.SubFactories;
+using Orbyss.Blazor.JsonForms.Core.Constants;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Utils;
 using System.Linq.Expressions;
 
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 /// <summary>
 /// Default implementation of <see cref="INavigationComponentFactory"/>.
@@ -32,7 +33,7 @@ public class NavigationComponentFactory : ComponentFactoryBase, INavigationCompo
     // ── INavigationComponentFactory ───────────────────────────────────────────
 
     /// <inheritdoc />
-    public IComponentInstance CreateNavigation(IJsonFormContext formContext)
+    public virtual IComponentInstance CreateNavigation(IJsonFormContext formContext)
     {
         var componentType = NavigationComponentType
             ?? throw new InvalidOperationException(

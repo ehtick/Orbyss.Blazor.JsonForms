@@ -1,10 +1,11 @@
-using Orbyss.Blazor.JsonForms.Constants;
-using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Context.Models;
-using Orbyss.Blazor.JsonForms.Utils;
+using Orbyss.Blazor.JsonForms.Core.ComponentFactory.SubFactories;
+using Orbyss.Blazor.JsonForms.Core.Constants;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
+using Orbyss.Blazor.JsonForms.Core.Utils;
 using System.Linq.Expressions;
 
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 /// <summary>
 /// Default implementation of <see cref="IListComponentFactory"/>.
@@ -34,7 +35,7 @@ public class ListComponentFactory : ComponentFactoryBase, IListComponentFactory
     // ── IListComponentFactory ─────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public IComponentInstance CreateList(IJsonFormContext formContext, FormListContext list)
+    public virtual IComponentInstance CreateList(IJsonFormContext formContext, FormListContext list)
     {
         var componentType = ListComponentType
             ?? throw new InvalidOperationException(
@@ -58,7 +59,7 @@ public class ListComponentFactory : ComponentFactoryBase, IListComponentFactory
     }
 
     /// <inheritdoc />
-    public IComponentInstance CreateListItem(IFormElementContext? listItem = null)
+    public virtual IComponentInstance CreateListItem(IFormElementContext? listItem = null)
     {
         var componentType = ListItemComponentType
             ?? throw new InvalidOperationException(

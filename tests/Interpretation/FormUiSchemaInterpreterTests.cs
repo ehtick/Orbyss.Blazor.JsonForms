@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Interpretation;
-using Orbyss.Blazor.JsonForms.UiSchema;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.UiSchema;
 using System.Text.Json.Nodes;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Interpretation;

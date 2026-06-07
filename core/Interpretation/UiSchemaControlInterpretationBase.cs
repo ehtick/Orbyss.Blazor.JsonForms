@@ -1,6 +1,6 @@
 using Newtonsoft.Json.Linq;
 
-namespace Orbyss.Blazor.JsonForms.Interpretation;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 /// <summary>
 /// Abstract base for all control-like element interpretations (controls, lists, arrays, action buttons).

@@ -1,9 +1,10 @@
 ﻿using Microsoft.JSInterop.Implementation;
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.Context.Models;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
 using Orbyss.Blazor.JsonForms.Context.Notifications;
+using Orbyss.Blazor.JsonForms.Core.Context.Notifications;
 using Orbyss.Blazor.JsonForms.Context.Utils;
-using Orbyss.Components.Json.Models;
+using Orbyss.Blazor.JsonForms.Core.Models;
 
 namespace Orbyss.Blazor.JsonForms.Tests.Context;
 
@@ -14,7 +15,7 @@ public sealed class JsonFormContextTests
     private const string translationSchema = "{\"resources\":{\"en\":{\"translation\":{\"firstName\":{\"label\":\"First Name\"},\"helperKey\":{\"label\":\"This is helpful info\"}}},\"nl\":{\"translation\":{\"firstName\":{\"label\":\"Voornaam\"}}}}}";
     private const string uiSchema = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"readonly\":true,\"disabled\":true}},{\"type\":\"Control\",\"scope\":\"#/properties/surname\",\"options\":{\"hidden\":true},\"rule\":{\"effect\":\"Show\",\"condition\":{\"scope\":\"#/properties/firstName\",\"schema\":{\"minLength\":2}}}}],\"options\":{\"customOption\":\"custom-option-value\"}}";
     private const string uiSchemaWithCssClass = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"cssClass\":\"my-class\"}}]}";
-    private const string uiSchemaWithHelperIconLabel = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"helperIconLabel\":\"helperKey\"}},{\"type\":\"Control\",\"scope\":\"#/properties/surname\",\"options\":{\"helperIconLabel\":\"Literal helper text\"}}]}";
+    private const string uiSchemaWithHelperIconTextLabel = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"helperIconTextLabel\":\"helperKey\"}},{\"type\":\"Control\",\"scope\":\"#/properties/surname\",\"options\":{\"helperIconTextLabel\":\"Literal helper text\"}}]}";
     private const string uiSchemaWithDuplicateScope = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\"},{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"hidden\":true}}]}";
     private const string uiSchemaWithHelperText = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/firstName\",\"options\":{\"helperTextLabel\":\"helperKey\"}},{\"type\":\"Control\",\"scope\":\"#/properties/surname\",\"options\":{\"helperTextLabel\":\"Literal helper text\"}}]}";
     private const string uiSchemaWithPrefixSuffix = "{\"type\":\"VerticalLayout\",\"elements\":[{\"type\":\"Control\",\"scope\":\"#/properties/age\",\"options\":{\"prefixLabel\":\"Age: \",\"suffixLabel\":\" years\"}}]}";
@@ -377,7 +378,7 @@ public sealed class JsonFormContextTests
     public void When_GetHelperIconText_And_OptionValueIsI18nKey_Then_ReturnsTranslatedLabel()
     {
         // Arrange — "helperKey" resolves to "This is helpful info" via the en translation
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithHelperIconLabel, translationSchema)
+        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithHelperIconTextLabel, translationSchema)
         {
             Language = "en"
         };
@@ -397,7 +398,7 @@ public sealed class JsonFormContextTests
     public void When_GetHelperIconText_And_OptionValueIsLiteralString_Then_ReturnsLiteralValue()
     {
         // Arrange — "Literal helper text" has no matching i18n key, falls back to the literal value
-        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithHelperIconLabel, translationSchema)
+        var initOptions = new JsonFormContextOptions(jsonSchema, uiSchemaWithHelperIconTextLabel, translationSchema)
         {
             Language = "en"
         };

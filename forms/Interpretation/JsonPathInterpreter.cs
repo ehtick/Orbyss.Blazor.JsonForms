@@ -1,4 +1,5 @@
-﻿using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
+﻿using Orbyss.Blazor.JsonForms.Core.Interpretation.Interfaces;
+using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
 
 namespace Orbyss.Blazor.JsonForms.Interpretation;
 

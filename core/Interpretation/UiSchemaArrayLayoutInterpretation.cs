@@ -1,6 +1,6 @@
 using Newtonsoft.Json.Linq;
 
-namespace Orbyss.Blazor.JsonForms.Interpretation;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 /// <summary>
 /// Interpretation produced for <c>ArrayLayout</c> UI schema elements.

@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 /// <summary>
 /// Default implementation of <see cref="IComponentInstance"/>: a resolved component type paired

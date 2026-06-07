@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Schema;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
 
 namespace Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
 

@@ -2,7 +2,8 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Context.Utils;
 using Orbyss.Blazor.JsonForms.Interpretation;
-using Orbyss.Components.Json.Models;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Models;
 using System.Reflection;
 using System.Text.Json.Nodes;
 

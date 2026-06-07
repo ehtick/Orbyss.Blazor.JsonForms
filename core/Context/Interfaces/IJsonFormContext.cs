@@ -1,8 +1,8 @@
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.Context.Models;
-using Orbyss.Components.Json.Models;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
+using Orbyss.Blazor.JsonForms.Core.Models;
 
-namespace Orbyss.Blazor.JsonForms.Context.Interfaces;
+namespace Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
 
 public interface IJsonFormContext
 {
@@ -62,7 +62,16 @@ public interface IJsonFormContext
 
     void AddArrayItem(Guid arrayContextId);
 
+    /// <summary>Appends a new array item seeded with <paramref name="itemData"/> (e.g. a dialog-based add).</summary>
+    void AddArrayItem(Guid arrayContextId, JToken itemData);
+
     void RemoveArrayItem(Guid arrayContextId, Guid arrayItemId);
+
+    /// <summary>Replaces the data of an existing array item (e.g. a dialog-based edit).</summary>
+    void UpdateArrayItem(Guid arrayContextId, Guid arrayItemId, JToken itemData);
+
+    /// <summary>Returns the current JSON data of an array item, for pre-filling a dialog-based edit.</summary>
+    JToken? GetArrayItemData(Guid arrayContextId, Guid arrayItemId);
 
     void MoveArrayItem(Guid arrayContextId, int fromIndex, int toIndex);
 
@@ -71,6 +80,8 @@ public interface IJsonFormContext
     Task NotifyArrayItemRemoved(Guid arrayContextId, int removedIndex);
 
     Task NotifyArrayItemMoved(Guid arrayContextId, int fromIndex, int toIndex);
+
+    Task NotifyArrayItemUpdated(Guid arrayContextId, int updatedIndex);
 
     void ChangeLanguage(string language);
 

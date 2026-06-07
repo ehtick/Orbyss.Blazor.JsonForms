@@ -1,8 +1,7 @@
-using Orbyss.Blazor.JsonForms.Constants;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 /// <summary>
 /// A single parameter assignment registered on a <see cref="FormComponentFactory"/>.
@@ -12,6 +11,8 @@ public abstract class ComponentParameterEntry
 {
     public abstract string ParameterName { get; }
     public abstract object? Value { get; }
+
+    public Type? ParameterType => Value?.GetType();
 }
 
 /// <summary>

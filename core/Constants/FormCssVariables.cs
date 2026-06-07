@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Constants;
+namespace Orbyss.Blazor.JsonForms.Core.Constants;
 
 /// <summary>
 /// CSS custom property names used by Orbyss JSON Forms components.

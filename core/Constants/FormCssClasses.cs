@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Constants;
+namespace Orbyss.Blazor.JsonForms.Core.Constants;
 
 /// <summary>
 /// CSS class names applied by the Orbyss JSON Forms engine.
@@ -51,6 +51,20 @@ public static class FormCssClasses
     /// (e.g. a stepper with both Previous and Next visible at the same time).
     /// </summary>
     public const string ButtonRowSpaceBetween = "orbyss-form-button-row--space-between";
+
+    // ── Titles ───────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Default class on the page title heading (rendered for each <c>Category</c> page).
+    /// Override the class or the <c>--orbyss-form-page-title-*</c> CSS variables to restyle.
+    /// </summary>
+    public const string PageTitle = "orbyss-form-page-title";
+
+    /// <summary>
+    /// Default class on a group / vertical-layout title heading.
+    /// Override the class or the <c>--orbyss-form-group-title-*</c> CSS variables to restyle.
+    /// </summary>
+    public const string GroupTitle = "orbyss-form-group-title";
 
     // ── Array layout ─────────────────────────────────────────────────────────────
 

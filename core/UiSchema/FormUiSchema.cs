@@ -1,9 +1,9 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.Utils;
+using Orbyss.Blazor.JsonForms.Core.Utils;
 using System.Text.Json.Serialization;
 
-namespace Orbyss.Blazor.JsonForms.UiSchema;
+namespace Orbyss.Blazor.JsonForms.Core.UiSchema;
 
 public sealed record FormUiSchema(
     [property: JsonProperty, JsonPropertyName("type")] UiSchemaElementType Type,

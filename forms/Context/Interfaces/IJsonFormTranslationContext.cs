@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Schema;
-using Orbyss.Blazor.JsonForms.Interpretation;
-using Orbyss.Components.Json.Models;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Models;
 
 namespace Orbyss.Blazor.JsonForms.Context.Interfaces;
 

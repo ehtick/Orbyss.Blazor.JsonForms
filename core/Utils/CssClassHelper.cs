@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Utils;
+namespace Orbyss.Blazor.JsonForms.Core.Utils;
 
 /// <summary>
 /// Utility for merging CSS class strings from component defaults and UI schema options.

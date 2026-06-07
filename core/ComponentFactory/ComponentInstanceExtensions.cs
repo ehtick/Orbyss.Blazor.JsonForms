@@ -1,7 +1,7 @@
-using Orbyss.Blazor.JsonForms.Constants;
+using Orbyss.Blazor.JsonForms.Core.Constants;
 using System.Globalization;
 
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 /// <summary>
 /// Chainable extension methods on <see cref="IComponentInstance"/> for setting common

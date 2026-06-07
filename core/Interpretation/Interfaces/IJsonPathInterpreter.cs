@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
+namespace Orbyss.Blazor.JsonForms.Core.Interpretation.Interfaces;
 
 public interface IJsonPathInterpreter
 {

@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.Constants;
+namespace Orbyss.Blazor.JsonForms.Core.Constants;
 
 public static class FormUiSchemaOptionKeys
 {
@@ -20,9 +20,9 @@ public static class FormUiSchemaOptionKeys
     /// <summary>
     /// Custom option key for a helper icon tooltip label.
     /// Value is resolved through the translation context (i18n key or literal string).
-    /// Example: "helperIconLabel": "my.i18n.key"
+    /// Example: "helperIconTextLabel": "my.i18n.key"
     /// </summary>
-    public const string HelperIconLabel = "helperIconLabel";
+    public const string HelperIconTextLabel = "helperIconTextLabel";
 
     /// <summary>
     /// Helper text shown below the control.

@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Context.Models;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Context.Models;
+using Orbyss.Blazor.JsonForms.Core.Interpretation.Interfaces;
 using Orbyss.Blazor.JsonForms.Interpretation.Interfaces;
 
 namespace Orbyss.Blazor.JsonForms.Context;
@@ -124,6 +126,39 @@ public sealed class JsonFormDataContext(
             jsonTransformer.AddValue(arrayContext.AbsoluteDataJsonPath, GetFormData(), new JObject());
 
         AddArrayItemInternal(arrayContext);
+    }
+
+    public void AddArrayItem(FormArrayContext arrayContext, JToken itemData)
+    {
+        jsonTransformer.AddValue(
+            arrayContext.AbsoluteDataJsonPath,
+            GetFormData(),
+            itemData?.DeepClone() ?? new JObject());
+
+        AddArrayItemInternal(arrayContext);
+    }
+
+    public void UpdateArrayItem(FormArrayContext arrayContext, Guid itemId, JToken itemData)
+    {
+        var item = arrayContext.Items.FirstOrDefault(x => x.Id == itemId)
+            ?? throw new InvalidOperationException($"Array does not contain an item with id '{itemId}'.");
+
+        var array = (JArray)(GetFormData().SelectToken(arrayContext.AbsoluteDataJsonPath, true)
+            ?? throw new InvalidOperationException($"Expected a JSON array at '{arrayContext.AbsoluteDataJsonPath}'."));
+
+        array[item.Index] = itemData?.DeepClone() ?? new JObject();
+
+        // Rebuild item contexts so any structural change in the replaced item is reflected.
+        RebuildArrayItems(arrayContext);
+    }
+
+    public JToken? GetArrayItemData(FormArrayContext arrayContext, Guid itemId)
+    {
+        var item = arrayContext.Items.FirstOrDefault(x => x.Id == itemId);
+        if (item is null) return null;
+
+        var itemPath = jsonPathInterpreter.AddIndexToPath(arrayContext.AbsoluteDataJsonPath, item.Index);
+        return GetFormData().SelectToken(itemPath, false);
     }
 
     public void RemoveArrayItem(FormArrayContext arrayContext, Guid itemId)

@@ -1,4 +1,4 @@
-namespace Orbyss.Blazor.JsonForms.ComponentFactory;
+namespace Orbyss.Blazor.JsonForms.Core.ComponentFactory;
 
 /// <summary>
 /// Represents the resolved output of a <see cref="IFormComponentFactory"/> <c>Create*</c> call:

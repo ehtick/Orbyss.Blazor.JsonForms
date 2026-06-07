@@ -1,11 +1,11 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.UiSchema;
-using Orbyss.Blazor.JsonForms.Utils;
-using Orbyss.Components.Json.Models;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Models;
+using Orbyss.Blazor.JsonForms.Core.UiSchema;
+using Orbyss.Blazor.JsonForms.Core.Utils;
 
-namespace Orbyss.Blazor.JsonForms.Context.Models;
+namespace Orbyss.Blazor.JsonForms.Core.Context.Models;
 
 /// <summary>
 /// Handler delegate invoked when a control's committed value changes or when raw input changes.
@@ -34,6 +34,12 @@ public delegate Task ArrayItemRemovedHandler(FormArrayContext arrayContext, int 
 /// Fired after an item has been moved within an <c>ArrayLayout</c> (drag-to-reorder).
 /// </summary>
 public delegate Task ArrayItemMovedHandler(FormArrayContext arrayContext, int fromIndex, int toIndex, IJsonFormContext form);
+
+/// <summary>
+/// Fired after an item's data has been replaced in an <c>ArrayLayout</c>
+/// (e.g. after a dialog-based edit committed via <c>UpdateArrayItem</c>).
+/// </summary>
+public delegate Task ArrayItemUpdatedHandler(FormArrayContext arrayContext, int updatedIndex, IJsonFormContext form);
 
 public sealed class JsonFormContextOptions
 {
@@ -71,10 +77,10 @@ public sealed class JsonFormContextOptions
     /// </summary>
     public event FormControlEventHandler? OnControlInputChanged;
 
-    internal Task InvokeControlValueChanged(FormControlContext control, IJsonFormContext form)
+    public Task InvokeControlValueChanged(FormControlContext control, IJsonFormContext form)
         => OnControlValueChanged?.Invoke(control, form) ?? Task.CompletedTask;
 
-    internal Task InvokeControlInputChanged(FormControlContext control, IJsonFormContext form)
+    public Task InvokeControlInputChanged(FormControlContext control, IJsonFormContext form)
         => OnControlInputChanged?.Invoke(control, form) ?? Task.CompletedTask;
 
     // ── Array events ──────────────────────────────────────────────────────────
@@ -88,14 +94,20 @@ public sealed class JsonFormContextOptions
     /// <summary>Fired after an item has been moved within an <c>ArrayLayout</c>.</summary>
     public event ArrayItemMovedHandler? OnArrayItemMoved;
 
-    internal Task InvokeArrayItemAdded(FormArrayContext array, int addedIndex, IJsonFormContext form)
+    /// <summary>Fired after an item's data has been replaced within an <c>ArrayLayout</c>.</summary>
+    public event ArrayItemUpdatedHandler? OnArrayItemUpdated;
+
+    public Task InvokeArrayItemAdded(FormArrayContext array, int addedIndex, IJsonFormContext form)
         => OnArrayItemAdded?.Invoke(array, addedIndex, form) ?? Task.CompletedTask;
 
-    internal Task InvokeArrayItemRemoved(FormArrayContext array, int removedIndex, IJsonFormContext form)
+    public Task InvokeArrayItemRemoved(FormArrayContext array, int removedIndex, IJsonFormContext form)
         => OnArrayItemRemoved?.Invoke(array, removedIndex, form) ?? Task.CompletedTask;
 
-    internal Task InvokeArrayItemMoved(FormArrayContext array, int fromIndex, int toIndex, IJsonFormContext form)
+    public Task InvokeArrayItemMoved(FormArrayContext array, int fromIndex, int toIndex, IJsonFormContext form)
         => OnArrayItemMoved?.Invoke(array, fromIndex, toIndex, form) ?? Task.CompletedTask;
+
+    public Task InvokeArrayItemUpdated(FormArrayContext array, int updatedIndex, IJsonFormContext form)
+        => OnArrayItemUpdated?.Invoke(array, updatedIndex, form) ?? Task.CompletedTask;
 
     private readonly Dictionary<string, FormActionHandler> _actions = new(StringComparer.OrdinalIgnoreCase);
 
@@ -106,6 +118,6 @@ public sealed class JsonFormContextOptions
     public void RegisterAction(string key, FormActionHandler handler)
         => _actions[key] = handler;
 
-    internal Task InvokeAction(string key, IJsonFormContext form)
+    public Task InvokeAction(string key, IJsonFormContext form)
         => _actions.TryGetValue(key, out var handler) ? handler(form) : Task.CompletedTask;
 }

@@ -1,8 +1,8 @@
 using Newtonsoft.Json.Linq;
-using Orbyss.Blazor.JsonForms.Context.Interfaces;
-using Orbyss.Blazor.JsonForms.Interpretation;
+using Orbyss.Blazor.JsonForms.Core.Context.Interfaces;
+using Orbyss.Blazor.JsonForms.Core.Interpretation;
 
-namespace Orbyss.Blazor.JsonForms.Context.Models;
+namespace Orbyss.Blazor.JsonForms.Core.Context.Models;
 
 public sealed class FormHorizontalLayoutContext(UiSchemaHorizontalLayoutInterpretation interpretation, IEnumerable<IFormElementContext> columns)
     : FormElementContextBase<UiSchemaHorizontalLayoutInterpretation>(interpretation)

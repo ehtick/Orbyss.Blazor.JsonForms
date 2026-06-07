@@ -44,6 +44,34 @@
 
     /* Height of single-line input controls */
     --orbyss-form-input-height: 2.5rem;
+
+    /* Page title (one per Category page) — neutral defaults, easy to override */
+    --orbyss-form-page-title-font-size: 1.125rem;
+    --orbyss-form-page-title-font-weight: 600;
+    --orbyss-form-page-title-color: inherit;
+
+    /* Group / vertical-layout title */
+    --orbyss-form-group-title-font-size: 1rem;
+    --orbyss-form-group-title-font-weight: 600;
+    --orbyss-form-group-title-color: inherit;
+}
+
+/* ─── Titles ─────────────────────────────────────────────────────────────── */
+/* Rendered as plain <div> elements (no heading UA styles). Restyle freely via
+   the variables above, or override these rules entirely. */
+
+.orbyss-form-page-title {
+    font-size: var(--orbyss-form-page-title-font-size);
+    font-weight: var(--orbyss-form-page-title-font-weight);
+    color: var(--orbyss-form-page-title-color);
+    margin: 0 0 var(--orbyss-form-row-gap) 0;
+}
+
+.orbyss-form-group-title {
+    font-size: var(--orbyss-form-group-title-font-size);
+    font-weight: var(--orbyss-form-group-title-font-weight);
+    color: var(--orbyss-form-group-title-color);
+    margin: var(--orbyss-form-row-gap) 0 0 0;
 }
 
 /* ─── Layout ─────────────────────────────────────────────────────────────── */
